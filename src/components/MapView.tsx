@@ -6,14 +6,6 @@ import { MOCK_STROLL_ROUTES, StrollRoute } from '../mocks/visitedPlaces';
 import { parseGpxToStrollRoute } from '../mocks/gpxImport';
 import * as turf from '@turf/turf';
 
-// Define the bounds of your map area (Zurich bounding box)
-const MAP_BOUNDS: [number, number][] = [
-    [47.35, 8.40], // SW
-    [47.35, 8.60], // SE
-    [47.50, 8.60], // NE
-    [47.50, 8.40], // NW
-];
-
 const FOG_RADIUS_METERS = 60; // Radius around each visited point to "unfog"
 
 const MapView: React.FC = () => {
@@ -39,35 +31,33 @@ const MapView: React.FC = () => {
         [importedRoutes]
     );
 
-    // Compute "holes" in the fog for each route point
-    const fogHoles = useMemo(() => {
-        const holes: [number, number][][] = [];
-        let points = allRoutes.map(p => p.points);
+    const routeRings = useMemo(() => {
+        const allPolygons: {
+            coordinates: [number, number][][];
+            opacity: number;
+            name: string;
+            ringIndex: number;
+        }[] = [];
 
-        allRoutes.forEach(route => {
-            if (points.length > 1) {
-                const line = turf.lineString(route.points.map(p => [p.lng, p.lat]));
-                const buffered = turf.buffer(line, FOG_RADIUS_METERS, { units: 'meters' });
-                // Convert GeoJSON polygon to Leaflet lat/lng array
-                turf.getCoords(buffered).forEach((ring: [number, number][]) => {
-                    holes.push(ring.map(([lng, lat]) => [lat, lng]));
+        return allRoutes.map(route => {
+            const line = turf.lineString(route.points.map(p => [p.lng, p.lat]));
+            let distance = FOG_RADIUS_METERS
+            for (let i = 0; i < 10; i++) {
+                distance = distance - (distance * (0.1));
+                const outer = turf.buffer(line, distance, { units: 'meters' });
+                const coords = outer?.geometry.coordinates.map(ring =>
+                    ring.map(([lng, lat]) => [lat, lng] as [number, number])
+                ) || [];
+                allPolygons.push({
+                    name: route.name,
+                    coordinates: coords,
+                    opacity: 0.015,
+                    ringIndex: i
                 });
-            } else if (route.points.length === 1) {
-                // Single point: fallback to a circle
-                const pt = route.points[0];
-                const circle: [number, number][] = [];
-                for (let i = 0; i < 32; i++) {
-                    const angle = (2 * Math.PI * i) / 32;
-                    const dLat = (Math.cos(angle) * FOG_RADIUS_METERS) / 111320;
-                    const dLng = (Math.sin(angle) * FOG_RADIUS_METERS) / (40075000 * Math.cos(pt.lat * Math.PI / 180) / 360);
-                    circle.push([pt.lat + dLat, pt.lng + dLng]);
-                }
-                holes.push(circle);
             }
-        });
-        
 
-        return holes;
+            return allPolygons;
+        });
     }, [allRoutes]);
 
     return (
@@ -83,24 +73,19 @@ const MapView: React.FC = () => {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
             {/* Fog of war polygon with merged holes */}
-            <Polygon
-                positions={[MAP_BOUNDS, ...fogHoles]}
-                pathOptions={{
-                    color: 'none',
-                    fillColor: '#111',
-                    fillOpacity: 0.92,
-                    stroke: false,
-                }}
-            />            
-            <Polygon
-                positions={[...fogHoles]}
-                pathOptions={{
-                    color: 'none',
-                    fillColor: '#111',
-                    fillOpacity: 0.80,
-                    stroke: false,
-                }}
-            />
+            {routeRings.flatMap(a => a).map((a, i) => (
+                <Polygon
+                    key={`${i}`}
+                    positions={a.coordinates}
+                    pathOptions={{
+                        color: "blue",
+                        weight: 0,
+                        fillOpacity: a.opacity,
+                        fillColor: "blue",
+                        opacity: a.opacity
+                    }}
+                />
+            ))}
             <Marker position={[userLocation.lat, userLocation.lng]}>
                 <Popup>
                     Mocked user location
