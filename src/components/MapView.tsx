@@ -4,12 +4,13 @@ import 'leaflet/dist/leaflet.css';
 import { useMockGeolocation } from '../hooks/useMockGeolocation';
 import { MOCK_STROLL_ROUTES, StrollRoute } from '../mocks/visitedPlaces';
 import { parseGpxToStrollRoute } from '../mocks/gpxImport';
-import * as turf from '@turf/turf';
+import { buildRouteMask } from '../buildRouteMask';
+import { RouteMaskLayer } from './RouteMaskLayer';
 
-const FOG_RADIUS_METERS = 60; // Radius around each visited point to "unfog"
+const FOG_RADIUS_METERS = 30; // Radius around each visited point to "unfog"
 
 const MapView: React.FC = () => {
-    const mapRef = useRef<any>(null);
+
     const userLocation = useMockGeolocation();
 
     // State for imported GPX routes
@@ -17,78 +18,48 @@ const MapView: React.FC = () => {
 
     // Example: Load a GPX file from the mocks folder on mount (for demo purposes)
     useEffect(() => {
-        // You can replace this with a file picker or fetch as needed
-        fetch('/src/mocks/Workout-2025-07-17-16-12-28.gpx')
-            .then(res => res.text())
-            .then(gpxText => parseGpxToStrollRoute(gpxText, "Imported GPX Route"))
-            .then(route => setImportedRoutes([route]))
-            .catch(() => setImportedRoutes([]));
+        const files = [
+            '/src/mocks/Workout-2025-07-17-16-12-28.gpx',
+            '/src/mocks/Workout-2025-08-16-10-28-36.gpx',
+        ];
+
+        Promise.all(
+            files.map(file =>
+                fetch(file)
+                    .then(res => res.text())
+                    .then(gpxText => parseGpxToStrollRoute(gpxText, file))
+            )
+        )
+            .then(routes => setImportedRoutes(routes))
+            .catch(err => {
+                console.error("Failed to load GPX files:", err);
+                setImportedRoutes([]);
+            });
     }, []);
 
     // Combine all routes (mocked + imported)
     const allRoutes = useMemo(
-        () => [...MOCK_STROLL_ROUTES, ...importedRoutes],
+        () => {
+            console.log("Combining routes:", [...importedRoutes, ...MOCK_STROLL_ROUTES]);
+            return [...importedRoutes, ...MOCK_STROLL_ROUTES];
+        },
         [importedRoutes]
     );
 
-    const routeRings = useMemo(() => {
-        const allPolygons: {
-            coordinates: [number, number][][];
-            opacity: number;
-            name: string;
-            ringIndex: number;
-        }[] = [];
+    const mask = useMemo(() => buildRouteMask(allRoutes, FOG_RADIUS_METERS), [allRoutes]);
 
-        return allRoutes.map(route => {
-            const line = turf.lineString(route.points.map(p => [p.lng, p.lat]));
-            let distance = FOG_RADIUS_METERS
-            for (let i = 0; i < 10; i++) {
-                distance = distance - (distance * (0.1));
-                const outer = turf.buffer(line, distance, { units: 'meters' });
-                const coords = outer?.geometry.coordinates.map(ring =>
-                    ring.map(([lng, lat]) => [lat, lng] as [number, number])
-                ) || [];
-                allPolygons.push({
-                    name: route.name,
-                    coordinates: coords,
-                    opacity: 0.015,
-                    ringIndex: i
-                });
-            }
 
-            return allPolygons;
-        });
-    }, [allRoutes]);
-
+    if (!importedRoutes.length) {
+        return <div>Loading GPX data…</div>;
+    }
+    
     return (
-        <MapContainer
-            center={[47.3769, 8.5417]}
-            zoom={13}
-            scrollWheelZoom={true}
-            ref={mapRef}
-            className="h-full"
-        >
-            <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            {/* Fog of war polygon with merged holes */}
-            {routeRings.flatMap(a => a).map((a, i) => (
-                <Polygon
-                    key={`${i}`}
-                    positions={a.coordinates}
-                    pathOptions={{
-                        color: "blue",
-                        weight: 0,
-                        fillOpacity: a.opacity,
-                        fillColor: "blue",
-                        opacity: a.opacity
-                    }}
-                />
-            ))}
+        <MapContainer center={[47.3769, 8.5417]} zoom={13} style={{ height: '100vh' }}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <RouteMaskLayer mask={mask} fillOpacity={0.6} />
             <Marker position={[userLocation.lat, userLocation.lng]}>
                 <Popup>
-                    Mocked user location
+                    Mocked user location 
                 </Popup>
             </Marker>
         </MapContainer>

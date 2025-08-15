@@ -56,5 +56,5 @@ export const MOCK_STROLL_ROUTES: StrollRoute[] = [
             { lat: 47.3801, lng: 8.5472 },
             { lat: 47.3817, lng: 8.5488 }
         ]
-    }
+    },
 ];
