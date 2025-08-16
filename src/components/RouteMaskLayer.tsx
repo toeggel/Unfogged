@@ -1,31 +1,50 @@
-// components/RouteMaskLayer.tsx
-import { GeoJSON } from 'react-leaflet';
+import { GeoJSON, LayerGroup } from 'react-leaflet';
 import type { Feature, Polygon, MultiPolygon } from 'geojson';
+import { polygon } from '@turf/turf';
 
 export function RouteMaskLayer({
   mask,
-  color = '#000',
-  fillOpacity = 0.55,
+  routes,
+  maskColor = '#000',
+  maskOpacity = 0.5,
+  routeColor = '#000',
+  routeOpacity = 0.2,
 }: {
   mask: Feature<Polygon | MultiPolygon> | null;
-  color?: string;
-  fillOpacity?: number;
+  routes: Feature<Polygon | MultiPolygon>[];
+  maskColor?: string;
+  maskOpacity?: number;
+  routeColor?: string;
+  routeOpacity?: number;
 }) {
-    console.log("Rendering RouteMaskLayer with mask:", mask);
   if (!mask) return null;
+
   return (
-    <GeoJSON
-      data={mask}
-      interactive={false}
-      style={{
-        // fill covers the world; the “holes” (your routes) are transparent
-        fillColor: color,
-        fillOpacity,
-        // no stroke outline
-        color,
-        weight: 0,
-        opacity: 0,
-      }}
-    />
+    <LayerGroup>
+      {/* base mask covering the world */}
+      <GeoJSON
+        data={mask}
+        pathOptions={{
+          interactive: false,
+          fillColor: maskColor,
+          fillOpacity: maskOpacity,
+          weight: 0,
+        }}
+      />
+
+      {/* semi-transparent “holes” where routes are */}
+      {routes.map((route, idx) => (
+        <GeoJSON
+          key={idx}
+          data={route}
+          pathOptions={{
+            interactive: false,
+            fillColor: routeColor,
+            fillOpacity: routeOpacity,
+            weight: 0,
+          }}
+        />
+      ))}
+    </LayerGroup>
   );
 }

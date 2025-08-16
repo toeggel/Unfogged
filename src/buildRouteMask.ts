@@ -26,7 +26,10 @@ export function buildRouteMask(
   routes: StrollRoute[],
   bufferMeters: number,
   bufferSteps: number = 8 // smoothness of the buffer
-): Feature<Polygon | MultiPolygon> | null {
+): {
+  mask: Feature<Polygon | MultiPolygon> | null
+  routes: Feature<Polygon | MultiPolygon>[]
+} {
   // 1) lines from your routes
   const lines: Feature<LineString>[] = routes
     .map(r => r.points.map(p => [p.lng, p.lat] as [number, number]))
@@ -34,7 +37,7 @@ export function buildRouteMask(
     .map(coords => lineString(coords));
 
   // If no lines, just mask nothing (or return the world polygon if you prefer)
-  if (lines.length === 0) return null;
+  if (lines.length === 0) return { mask: null, routes: [] };
 
   // 2) buffer lines (meters)
   const buffered = buffer(
@@ -52,5 +55,7 @@ export function buildRouteMask(
   // 5) subtract buffers from world => a mask with holes where routes are
   // Turf v7 difference takes a FeatureCollection of [base, subtractor].
   // Returns null if the subtractor covers everything. :contentReference[oaicite:2]{index=2}
-  return difference(featureCollection([world, buffersUnion]));
+  return {
+    mask: difference(featureCollection([world, buffersUnion])),
+  routes: [buffersUnion]};
 }

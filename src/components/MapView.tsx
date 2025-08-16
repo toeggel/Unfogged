@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polygon } from 'react-leaflet';
+import React, { useEffect, useMemo, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useMockGeolocation } from '../hooks/useMockGeolocation';
 import { MOCK_STROLL_ROUTES, StrollRoute } from '../mocks/visitedPlaces';
@@ -54,9 +54,12 @@ const MapView: React.FC = () => {
     }
     
     return (
-        <MapContainer center={[47.3769, 8.5417]} zoom={13} style={{ height: '100vh' }}>
+        <MapContainer 
+        center={[47.3769, 8.5417]}
+        zoom={13} 
+        style={{ height: '100vh' }}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <RouteMaskLayer mask={mask} fillOpacity={0.6} />
+            <RouteMaskLayer mask={mask.mask} routes={mask.routes} />
             <Marker position={[userLocation.lat, userLocation.lng]}>
                 <Popup>
                     Mocked user location 
