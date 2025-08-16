@@ -1,13 +1,13 @@
-import { GeoJSON, LayerGroup } from 'react-leaflet';
-import type { Feature, Polygon, MultiPolygon } from 'geojson';
-import { polygon } from '@turf/turf';
+import { GeoJSON, LayerGroup } from "react-leaflet";
+import type { Feature, Polygon, MultiPolygon } from "geojson";
+import { polygon } from "@turf/turf";
 
 export function RouteMaskLayer({
   mask,
   routes,
-  maskColor = '#000',
+  maskColor = "#000",
   maskOpacity = 0.5,
-  routeColor = '#000',
+  routeColor = "#000",
   routeOpacity = 0.2,
 }: {
   mask: Feature<Polygon | MultiPolygon> | null;

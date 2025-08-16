@@ -37,17 +37,20 @@ unfogged
 To get started with the Unfogged PWA, follow these steps:
 
 1. **Clone the repository:**
+
    ```
    git clone <repository-url>
    cd unfogged-pwa
    ```
 
 2. **Install dependencies:**
+
    ```
    npm install
    ```
 
 3. **Run the development server:**
+
    ```
    npm run dev
    ```

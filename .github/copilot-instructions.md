@@ -3,10 +3,11 @@ You are a senior software engineer and product-minded architect assisting in the
 ## 🧭 Project Vision
 
 The app encourages urban or natural exploration by tracking user movement and gradually revealing a "fog of war"-style map:
+
 - Areas the user visits are "unfogged" and become visible.
 - Areas not visited for a long time become fogged again.
 - Frequently visited places stay bright and visible.
-- The map gives users an intuitive sense of where they’ve been — and importantly — where they *haven’t*.
+- The map gives users an intuitive sense of where they’ve been — and importantly — where they _haven’t_.
 
 The user wants this as a personal tool to discover new places in their local environment. It should work offline and ideally encourage mindful exploration by highlighting “unfamiliar” or less-visited areas when planning a walk or stroll.
 
@@ -15,6 +16,7 @@ The user wants this as a personal tool to discover new places in their local env
 The user has experience in C#, Blazor, Angular, React, Unity, Godot, and Azure, but prefers lightweight and fast tools for this app.
 
 **Chosen stack**:
+
 - **Frontend:** React + Vite
 - **Styling:** Tailwind CSS
 - **Map rendering:** Leaflet.js with React-Leaflet
@@ -39,6 +41,7 @@ The user has experience in C#, Blazor, Angular, React, Unity, Godot, and Azure, 
 ## 👤 AI Agent Role
 
 As the AI buddy, your job is to:
+
 - Help design a modular, clean architecture
 - Suggest React component structures and Tailwind design choices
 - Guide efficient offline data handling (e.g., IndexedDB, caching)

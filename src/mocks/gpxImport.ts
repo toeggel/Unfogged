@@ -1,4 +1,4 @@
-import { StrollRoute, RoutePoint } from './visitedPlaces';
+import { StrollRoute, RoutePoint } from "./visitedPlaces";
 
 /** Remove consecutive duplicates (exact same lat/lng) */
 function dedupeConsecutivePoints(points: RoutePoint[]): RoutePoint[] {
@@ -15,23 +15,25 @@ function dedupeConsecutivePoints(points: RoutePoint[]): RoutePoint[] {
  */
 export async function parseGpxToStrollRoute(
   gpxContent: string,
-  routeName = "Imported GPX"
+  routeName = "Imported GPX",
 ): Promise<StrollRoute> {
   const parser = new DOMParser();
   const xml = parser.parseFromString(gpxContent, "application/xml");
 
-  const name = xml.querySelector("trk > name")?.textContent?.trim() || routeName;
-  const description = xml.querySelector("trk > desc")?.textContent?.trim() || undefined;
+  const name =
+    xml.querySelector("trk > name")?.textContent?.trim() || routeName;
+  const description =
+    xml.querySelector("trk > desc")?.textContent?.trim() || undefined;
 
   const points: RoutePoint[] = [];
-  xml.querySelectorAll("trkpt").forEach(pt => {
+  xml.querySelectorAll("trkpt").forEach((pt) => {
     const lat = parseFloat(pt.getAttribute("lat") || "");
     const lng = parseFloat(pt.getAttribute("lon") || "");
     const time = pt.querySelector("time")?.textContent;
     points.push({
       lat,
       lng,
-      timestamp: time ? Date.parse(time) : undefined
+      timestamp: time ? Date.parse(time) : undefined,
     });
   });
 
@@ -41,6 +43,6 @@ export async function parseGpxToStrollRoute(
   return {
     name,
     description,
-    points: cleanedPoints
+    points: cleanedPoints,
   };
 }
