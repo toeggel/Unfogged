@@ -1,6 +1,5 @@
 import { GeoJSON, LayerGroup } from "react-leaflet";
-import type { Feature, Polygon, MultiPolygon, FeatureCollection } from "geojson";
-import { polygon, union } from "@turf/turf";
+import type { Feature, Polygon, MultiPolygon } from "geojson";
 
 export interface BufferedRoute {
   route: Feature<Polygon | MultiPolygon>;
@@ -8,51 +7,48 @@ export interface BufferedRoute {
   color?: string;
 }
 
-export function RouteMaskLayer({
+export const RouteMaskLayer = ({
   mask,
   routes,
-  maskColor = "#000",
-  maskOpacity = 0.5,
-  routeColor = "#000",
-  routeOpacity = 0.5,
+  maskColor: color = "#000",
+  opacity = 0.7,
 }: {
   mask: Feature<Polygon | MultiPolygon> | null;
-  routes: FeatureCollection<Polygon | MultiPolygon>[];
+  routes: Feature<Polygon | MultiPolygon>[];
   maskColor?: string;
-  maskOpacity?: number;
-  routeColor?: string;
-  routeOpacity?: number;
-}) {
-  let opacityStep = routeOpacity / routes.length;
+  opacity?: number;
+}) => {
+  let opacityStep = opacity / (routes.length + 1);
 
-  if (!mask) return null;
+  if (!mask) {
+    return null;
+  }
 
   return (
     <LayerGroup>
-      {/* base mask covering the world */}
       <GeoJSON
         data={mask}
         pathOptions={{
           interactive: false,
-          fillColor: maskColor,
-          fillOpacity: maskOpacity,
+          fillColor: color,
+          fillOpacity: opacity,
           weight: 0,
         }}
       />
 
-      {/* semi-transparent “holes” where routes are */}
+      {/* level of fog rings */}
       {routes.map((route, idx) => (
         <GeoJSON
           key={idx}
           data={route}
           pathOptions={{
             interactive: false,
-            fillColor: routeColor,
-            fillOpacity: opacityStep * idx,
+            fillColor: color,
+            fillOpacity: opacityStep * (idx + 1),
             weight: 0,
           }}
         />
       ))}
     </LayerGroup>
   );
-}
+};

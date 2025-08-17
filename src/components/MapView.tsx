@@ -6,16 +6,17 @@ import { MOCK_STROLL_ROUTES, StrollRoute } from "../mocks/visitedPlaces";
 import { parseGpxToStrollRoute } from "../mocks/gpxImport";
 import { buildRouteMask } from "../buildRouteMask";
 import { RouteMaskLayer } from "./RouteMaskLayer";
+import { latLng } from "leaflet";
 
-const FOG_RADIUS_METERS = 30; // Radius around each visited point to "unfog"
+const FOG_RADIUS_METERS = 30;
+const FOG_LEVELS = 2;
+const MAP_CENTER_GUGGACH = latLng(47.401344, 8.534294);
 
 const MapView: React.FC = () => {
   const userLocation = useMockGeolocation();
 
-  // State for imported GPX routes
   const [importedRoutes, setImportedRoutes] = useState<StrollRoute[]>([]);
 
-  // Example: Load a GPX file from the mocks folder on mount (for demo purposes)
   useEffect(() => {
     const files = [
       "/src/mocks/Workout-2025-07-17-16-12-28.gpx",
@@ -26,8 +27,8 @@ const MapView: React.FC = () => {
       files.map((file) =>
         fetch(file)
           .then((res) => res.text())
-          .then((gpxText) => parseGpxToStrollRoute(gpxText, file))
-      )
+          .then((gpxText) => parseGpxToStrollRoute(gpxText, file)),
+      ),
     )
       .then((routes) => setImportedRoutes(routes))
       .catch((err) => {
@@ -36,32 +37,20 @@ const MapView: React.FC = () => {
       });
   }, []);
 
-  // Combine all routes (mocked + imported)
   const allRoutes = useMemo(() => {
-    console.log("Combining routes:", [
-      ...importedRoutes,
-      ...MOCK_STROLL_ROUTES,
-    ]);
     return [...importedRoutes, ...MOCK_STROLL_ROUTES];
   }, [importedRoutes]);
 
-  const mask = useMemo(
-    () => buildRouteMask(allRoutes, FOG_RADIUS_METERS),
-    [allRoutes]
-  );
+  const mask = useMemo(() => buildRouteMask(allRoutes, FOG_RADIUS_METERS, FOG_LEVELS), [allRoutes]);
 
   if (!importedRoutes.length) {
     return <div>Loading GPX data…</div>;
   }
 
   return (
-    <MapContainer
-      center={[47.401344, 8.534294]}
-      zoom={20}
-      style={{ height: "100vh" }}
-    >
+    <MapContainer center={MAP_CENTER_GUGGACH} zoom={20} style={{ height: "100vh" }}>
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      <RouteMaskLayer mask={mask.mask} routes={mask.routes} />
+      <RouteMaskLayer mask={mask.mask} routes={mask.fogRings} />
       <Marker position={[userLocation.lat, userLocation.lng]}>
         <Popup>Mocked user location</Popup>
       </Marker>

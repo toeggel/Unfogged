@@ -1,6 +1,5 @@
-// geo/buildRouteMask.ts
 import { lineString, featureCollection, polygon } from "@turf/helpers";
-import { buffer, Options } from "@turf/buffer";
+import { buffer } from "@turf/buffer";
 import { union } from "@turf/union";
 import { difference } from "@turf/difference";
 import type { Feature, FeatureCollection, LineString, Polygon, MultiPolygon } from "geojson";
@@ -35,71 +34,84 @@ const defaultBufferSettings = {
  * Builds a “world mask” with holes cut where your buffered routes are.
  * Returns null if nothing is left to mask.
  */
-export function buildRouteMask(
+export const buildRouteMask = (
   routes: StrollRoute[],
   bufferMeters: number,
-  numberOfLayers: number = 2, // number of route layers to buffer, at least 1
+  fogLevels: number = 2, // number of additonal fog levels
 ): {
   mask: Feature<Polygon | MultiPolygon> | null;
-  routes: (Feature<Polygon | MultiPolygon> | null)[];
-} {
+  fogRings: Feature<Polygon | MultiPolygon>[];
+} => {
   const lines: Feature<LineString>[] = createLine(routes);
 
   if (lines.length === 0) {
-    return { mask: null, routes: [] };
+    return { mask: null, fogRings: [] };
   }
 
-  let mainRouteBuffer = buffer(
+  const allRoutes = createRoutesPolygon(lines, bufferMeters);
+  const worldMask = featureDifference([world, allRoutes]);
+
+  let fogRings = createFogRings(fogLevels, bufferMeters, lines, allRoutes);
+
+  return {
+    mask: worldMask,
+    fogRings: fogRings,
+  };
+};
+
+const createFogRings = (
+  fogLevels: number,
+  bufferMeters: number,
+  lines: Feature<LineString>[],
+  mainRoutePolygon: Feature<Polygon | MultiPolygon>,
+): Feature<Polygon | MultiPolygon>[] => {
+  if (fogLevels <= 0) {
+    return [];
+  }
+
+  const bufferStep = bufferMeters / (fogLevels + 1);
+  const foggedRoutes: Feature<Polygon | MultiPolygon>[] = [];
+
+  for (let i = 1; i <= fogLevels; i++) {
+    const distance = bufferStep * i;
+    const routesPolygon = createRoutesPolygon(lines, distance);
+    foggedRoutes.push(routesPolygon);
+  }
+
+  // Build layers from differences between successive buffers (build rings)
+  const foggedRings = foggedRoutes.reverse().map((current, i) => {
+    const innerRing = i === 0 ? null : featureDifference([mainRoutePolygon, foggedRoutes[i - 1]]);
+
+    return featureDifference(
+      innerRing ? [mainRoutePolygon, current, innerRing] : [mainRoutePolygon, current],
+    );
+  });
+
+  return foggedRings
+    .filter((ring): ring is Feature<Polygon | MultiPolygon> => ring !== null)
+    .reverse();
+};
+
+const createLine = (routes: StrollRoute[]) => {
+  return routes
+    .map((r) => r.points.map((p) => [p.lng, p.lat]))
+    .filter((coords) => coords.length >= 2)
+    .map((coords) => lineString(coords));
+};
+
+const createRoutesPolygon = (
+  lines: Feature<LineString>[],
+  bufferMeters: number,
+): Feature<Polygon | MultiPolygon> => {
+  const buffered = buffer(
     featureCollection(lines),
     bufferMeters,
     defaultBufferSettings,
   ) as FeatureCollection<Polygon>;
-  const mainRoutePolygon = union(mainRouteBuffer) as Feature<Polygon | MultiPolygon>;
-  const worldMask = difference(featureCollection([world, mainRoutePolygon]));
 
-  // 2) buffer lines (meters)
-  let buffers: (Feature<Polygon | MultiPolygon> | null)[] = createBufferedRoutes(
-    bufferMeters,
-    numberOfLayers,
-    lines,
-    mainRoutePolygon,
-  );
+  return union(buffered) as Feature<Polygon | MultiPolygon>;
+};
 
-  return {
-    mask: worldMask,
-    routes: buffers,
-  };
-}
-
-function createBufferedRoutes(
-  bufferMeters: number,
-  numberOfLayers: number,
-  lines: Feature<LineString>[],
-  mainRoutePolygon: Feature<Polygon | MultiPolygon>,
-) {
-  let buffers: (Feature<Polygon | MultiPolygon> | null)[] = [];
-  let bufferedRoutes: Feature<Polygon | MultiPolygon>[] = [];
-  let bufferMeterStep = bufferMeters / numberOfLayers;
-  for (let i = 0; i < numberOfLayers; i++) {
-    const buffered = buffer(
-      featureCollection(lines),
-      bufferMeterStep * (i + 1),
-      defaultBufferSettings,
-    ) as FeatureCollection<Polygon>;
-
-    const bufferedRoute = union(buffered) as Feature<Polygon | MultiPolygon>;
-    bufferedRoutes.push(bufferedRoute);
-  }
-
-  buffers = bufferedRoutes.map((b, i) =>
-    difference(featureCollection([b, i > 0 ? bufferedRoutes[i - 1] : mainRoutePolygon])),
-  );
-  return buffers;
-}
-
-function createLine(routes: StrollRoute[]) {
-  return routes
-    .map((r) => r.points.map((p) => [p.lng, p.lat] as [number, number]))
-    .filter((coords) => coords.length >= 2)
-    .map((coords) => lineString(coords));
-}
+const featureDifference = (features: Feature<Polygon | MultiPolygon>[]) => {
+  return difference(featureCollection(features));
+};
