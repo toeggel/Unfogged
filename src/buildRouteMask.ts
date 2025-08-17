@@ -1,15 +1,9 @@
 // geo/buildRouteMask.ts
 import { lineString, featureCollection, polygon } from "@turf/helpers";
-import { buffer } from "@turf/buffer";
+import { buffer, Options } from "@turf/buffer";
 import { union } from "@turf/union";
 import { difference } from "@turf/difference";
-import type {
-  Feature,
-  FeatureCollection,
-  LineString,
-  Polygon,
-  MultiPolygon,
-} from "geojson";
+import type { Feature, FeatureCollection, LineString, Polygon, MultiPolygon } from "geojson";
 
 export interface RoutePoint {
   lat: number;
@@ -22,6 +16,21 @@ export interface StrollRoute {
   points: RoutePoint[];
 }
 
+const world = polygon([
+  [
+    [-180, -90],
+    [180, -90],
+    [180, 90],
+    [-180, 90],
+    [-180, -90],
+  ],
+]);
+
+const defaultBufferSettings = {
+  units: "meters" as const,
+  steps: 8, // smoothness of the buffer,
+};
+
 /**
  * Builds a “world mask” with holes cut where your buffered routes are.
  * Returns null if nothing is left to mask.
@@ -29,45 +38,68 @@ export interface StrollRoute {
 export function buildRouteMask(
   routes: StrollRoute[],
   bufferMeters: number,
-  bufferSteps: number = 8, // smoothness of the buffer
+  numberOfLayers: number = 2, // number of route layers to buffer, at least 1
 ): {
   mask: Feature<Polygon | MultiPolygon> | null;
-  routes: Feature<Polygon | MultiPolygon>[];
+  routes: (Feature<Polygon | MultiPolygon> | null)[];
 } {
-  // 1) lines from your routes
-  const lines: Feature<LineString>[] = routes
+  const lines: Feature<LineString>[] = createLine(routes);
+
+  if (lines.length === 0) {
+    return { mask: null, routes: [] };
+  }
+
+  let mainRouteBuffer = buffer(
+    featureCollection(lines),
+    bufferMeters,
+    defaultBufferSettings,
+  ) as FeatureCollection<Polygon>;
+  const mainRoutePolygon = union(mainRouteBuffer) as Feature<Polygon | MultiPolygon>;
+  const worldMask = difference(featureCollection([world, mainRoutePolygon]));
+
+  // 2) buffer lines (meters)
+  let buffers: (Feature<Polygon | MultiPolygon> | null)[] = createBufferedRoutes(
+    bufferMeters,
+    numberOfLayers,
+    lines,
+    mainRoutePolygon,
+  );
+
+  return {
+    mask: worldMask,
+    routes: buffers,
+  };
+}
+
+function createBufferedRoutes(
+  bufferMeters: number,
+  numberOfLayers: number,
+  lines: Feature<LineString>[],
+  mainRoutePolygon: Feature<Polygon | MultiPolygon>,
+) {
+  let buffers: (Feature<Polygon | MultiPolygon> | null)[] = [];
+  let bufferedRoutes: Feature<Polygon | MultiPolygon>[] = [];
+  let bufferMeterStep = bufferMeters / numberOfLayers;
+  for (let i = 0; i < numberOfLayers; i++) {
+    const buffered = buffer(
+      featureCollection(lines),
+      bufferMeterStep * (i + 1),
+      defaultBufferSettings,
+    ) as FeatureCollection<Polygon>;
+
+    const bufferedRoute = union(buffered) as Feature<Polygon | MultiPolygon>;
+    bufferedRoutes.push(bufferedRoute);
+  }
+
+  buffers = bufferedRoutes.map((b, i) =>
+    difference(featureCollection([b, i > 0 ? bufferedRoutes[i - 1] : mainRoutePolygon])),
+  );
+  return buffers;
+}
+
+function createLine(routes: StrollRoute[]) {
+  return routes
     .map((r) => r.points.map((p) => [p.lng, p.lat] as [number, number]))
     .filter((coords) => coords.length >= 2)
     .map((coords) => lineString(coords));
-
-  // If no lines, just mask nothing (or return the world polygon if you prefer)
-  if (lines.length === 0) return { mask: null, routes: [] };
-
-  // 2) buffer lines (meters)
-  const buffered = buffer(featureCollection(lines), bufferMeters, {
-    units: "meters",
-    steps: bufferSteps,
-  }) as FeatureCollection<Polygon>;
-
-  // 3) union all buffers into one polygon/multipolygon
-  const buffersUnion = union(buffered) as Feature<Polygon | MultiPolygon>;
-
-  // 4) world polygon (WGS84/Leaflet)
-  const world = polygon([
-    [
-      [-180, -90],
-      [180, -90],
-      [180, 90],
-      [-180, 90],
-      [-180, -90],
-    ],
-  ]);
-
-  // 5) subtract buffers from world => a mask with holes where routes are
-  // Turf v7 difference takes a FeatureCollection of [base, subtractor].
-  // Returns null if the subtractor covers everything. :contentReference[oaicite:2]{index=2}
-  return {
-    mask: difference(featureCollection([world, buffersUnion])),
-    routes: [buffersUnion],
-  };
 }

@@ -56,8 +56,8 @@ const MapView: React.FC = () => {
 
   return (
     <MapContainer
-      center={[47.3769, 8.5417]}
-      zoom={13}
+      center={[47.401344, 8.534294]}
+      zoom={20}
       style={{ height: "100vh" }}
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

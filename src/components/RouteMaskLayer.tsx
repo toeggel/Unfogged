@@ -1,6 +1,12 @@
 import { GeoJSON, LayerGroup } from "react-leaflet";
-import type { Feature, Polygon, MultiPolygon } from "geojson";
-import { polygon } from "@turf/turf";
+import type { Feature, Polygon, MultiPolygon, FeatureCollection } from "geojson";
+import { polygon, union } from "@turf/turf";
+
+export interface BufferedRoute {
+  route: Feature<Polygon | MultiPolygon>;
+  opacity?: number;
+  color?: string;
+}
 
 export function RouteMaskLayer({
   mask,
@@ -8,15 +14,17 @@ export function RouteMaskLayer({
   maskColor = "#000",
   maskOpacity = 0.5,
   routeColor = "#000",
-  routeOpacity = 0.2,
+  routeOpacity = 0.5,
 }: {
   mask: Feature<Polygon | MultiPolygon> | null;
-  routes: Feature<Polygon | MultiPolygon>[];
+  routes: FeatureCollection<Polygon | MultiPolygon>[];
   maskColor?: string;
   maskOpacity?: number;
   routeColor?: string;
   routeOpacity?: number;
 }) {
+  let opacityStep = routeOpacity / routes.length;
+
   if (!mask) return null;
 
   return (
@@ -40,7 +48,7 @@ export function RouteMaskLayer({
           pathOptions={{
             interactive: false,
             fillColor: routeColor,
-            fillOpacity: routeOpacity,
+            fillOpacity: opacityStep * idx,
             weight: 0,
           }}
         />
