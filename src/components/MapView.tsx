@@ -9,11 +9,11 @@ import { RouteMaskLayer } from "./RouteMaskLayer";
 import { latLng } from "leaflet";
 
 const FOG_RADIUS_METERS = 30;
-const FOG_LEVELS = 2;
-const MAP_CENTER_GUGGACH = latLng(47.401344, 8.534294);
+const FOG_LEVELS = 1;
+const MAP_CENTER_GUGGACH = latLng(47.401263, 8.533942);
 
 const MapView: React.FC = () => {
-  const userLocation = useMockGeolocation();
+  const userLocation = MAP_CENTER_GUGGACH;
 
   const [importedRoutes, setImportedRoutes] = useState<StrollRoute[]>([]);
 
@@ -21,6 +21,7 @@ const MapView: React.FC = () => {
     const files = [
       "/src/mocks/Workout-2025-07-17-16-12-28.gpx",
       "/src/mocks/Workout-2025-08-16-10-28-36.gpx",
+      "/src/mocks/Workout-2025-09-03-19-54-14.gpx",
     ];
 
     Promise.all(
@@ -38,7 +39,7 @@ const MapView: React.FC = () => {
   }, []);
 
   const allRoutes = useMemo(() => {
-    return [...importedRoutes, ...MOCK_STROLL_ROUTES];
+    return [...importedRoutes];
   }, [importedRoutes]);
 
   const mask = useMemo(() => buildRouteMask(allRoutes, FOG_RADIUS_METERS, FOG_LEVELS), [allRoutes]);

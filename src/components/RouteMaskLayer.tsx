@@ -11,7 +11,7 @@ export const RouteMaskLayer = ({
   mask,
   routes,
   maskColor: color = "#000",
-  opacity = 0.7,
+  opacity = 0.9,
 }: {
   mask: Feature<Polygon | MultiPolygon> | null;
   routes: Feature<Polygon | MultiPolygon>[];
