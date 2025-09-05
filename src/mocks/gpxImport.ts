@@ -37,10 +37,67 @@ export const parseGpxToStrollRoute = async (
 
   // 🔹 Clean up consecutive duplicates
   const cleanedPoints = dedupeConsecutivePoints(points);
+  const simplified = simplifyRoute(cleanedPoints, 0.00001); // tweak epsilon for more/less reduction
+
+  console.log(
+    `GPX Import: ${points.length} points, ${cleanedPoints.length} after dedupe, ${simplified.length} after simplification.`,
+  );
 
   return {
     name,
     description,
-    points: cleanedPoints,
+    points: simplified,
   };
+};
+
+/**
+ * Simplifies a route using the Ramer–Douglas–Peucker algorithm.
+ * @param points Array of RoutePoint
+ * @param epsilon Tolerance in degrees (smaller = more points kept)
+ */
+export const simplifyRoute = (points: RoutePoint[], epsilon: number = 0.0001): RoutePoint[] => {
+  if (points.length < 3) {
+    return points;
+  }
+
+  // Perpendicular distance from point to line (lat/lng, not geodesic)
+  const getPerpendicularDistance = (
+    pt: RoutePoint,
+    lineStart: RoutePoint,
+    lineEnd: RoutePoint,
+  ): number => {
+    const x0 = pt.lng;
+    const y0 = pt.lat;
+    const x1 = lineStart.lng;
+    const y1 = lineStart.lat;
+    const x2 = lineEnd.lng;
+    const y2 = lineEnd.lat;
+    const num = Math.abs((y2 - y1) * x0 - (x2 - x1) * y0 + x2 * y1 - y2 * x1);
+    const den = Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
+    return den === 0 ? 0 : num / den;
+  };
+
+  const rdp = (start: number, end: number, pts: RoutePoint[], eps: number, keep: boolean[]) => {
+    let maxDist = 0;
+    let idx = start;
+    for (let i = start + 1; i < end; i++) {
+      const dist = getPerpendicularDistance(pts[i], pts[start], pts[end]);
+      if (dist > maxDist) {
+        maxDist = dist;
+        idx = i;
+      }
+    }
+    if (maxDist > eps) {
+      keep[idx] = true;
+      rdp(start, idx, pts, eps, keep);
+      rdp(idx, end, pts, eps, keep);
+    }
+  };
+
+  const keep = Array(points.length).fill(false);
+  keep[0] = true;
+  keep[points.length - 1] = true;
+  rdp(0, points.length - 1, points, epsilon, keep);
+
+  return points.filter((_, i) => keep[i]);
 };
