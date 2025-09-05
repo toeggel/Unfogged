@@ -19,6 +19,11 @@ const MapView: React.FC = () => {
 
   useEffect(() => {
     const files = [
+      "/src/mocks/Workout-2021-08-21-16-51-18.gpx",
+      "/src/mocks/Workout-2023-07-27-15-57-27.gpx",
+      "/src/mocks/Workout-2023-08-03-17-11-26.gpx",
+      "/src/mocks/Workout-2023-12-19-10-55-33.gpx",
+      "/src/mocks/Workout-2024-07-16-16-07-28.gpx",
       "/src/mocks/Workout-2025-07-17-16-12-28.gpx",
       "/src/mocks/Workout-2025-08-16-10-28-36.gpx",
       "/src/mocks/Workout-2025-09-03-19-54-14.gpx",
@@ -49,7 +54,7 @@ const MapView: React.FC = () => {
   }
 
   return (
-    <MapContainer center={MAP_CENTER_GUGGACH} zoom={20} style={{ height: "100vh" }}>
+    <MapContainer center={MAP_CENTER_GUGGACH} zoom={16} style={{ height: "100vh" }}>
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <RouteMaskLayer mask={mask.mask} routes={mask.fogRings} />
       <Marker position={[userLocation.lat, userLocation.lng]}>
