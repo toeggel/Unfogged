@@ -37,7 +37,7 @@ export const parseGpxToStrollRoute = async (
 
   // 🔹 Clean up consecutive duplicates
   const cleanedPoints = dedupeConsecutivePoints(points);
-  const simplified = simplifyRoute(cleanedPoints, 0.00001); // tweak epsilon for more/less reduction
+  const simplified = simplifyRoute(cleanedPoints, 5); // tweak epsilon for more/less reduction
 
   console.log(
     `GPX Import: ${points.length} points, ${cleanedPoints.length} after dedupe, ${simplified.length} after simplification.`,
@@ -53,26 +53,32 @@ export const parseGpxToStrollRoute = async (
 /**
  * Simplifies a route using the Ramer–Douglas–Peucker algorithm.
  * @param points Array of RoutePoint
- * @param epsilon Tolerance in degrees (smaller = more points kept)
+ * @param epsilon Tolerance in meters (smaller = more points kept)
  */
-export const simplifyRoute = (points: RoutePoint[], epsilon: number = 0.0001): RoutePoint[] => {
+export const simplifyRoute = (points: RoutePoint[], epsilon: number = 10): RoutePoint[] => {
   if (points.length < 3) {
     return points;
   }
 
-  // Perpendicular distance from point to line (lat/lng, not geodesic)
+  // Perpendicular distance from point to line (in meters)
   const getPerpendicularDistance = (
     pt: RoutePoint,
     lineStart: RoutePoint,
     lineEnd: RoutePoint,
   ): number => {
-    const x0 = pt.lng;
-    const y0 = pt.lat;
-    const x1 = lineStart.lng;
-    const y1 = lineStart.lat;
-    const x2 = lineEnd.lng;
-    const y2 = lineEnd.lat;
-    const num = Math.abs((y2 - y1) * x0 - (x2 - x1) * y0 + x2 * y1 - y2 * x1);
+    // Convert degrees to meters using equirectangular approximation
+    const latAvg = ((lineStart.lat + lineEnd.lat) / 2) * (Math.PI / 180);
+    const meterPerDegLat = 111320;
+    const meterPerDegLng = 111320 * Math.cos(latAvg);
+
+    const x0 = (pt.lng - lineStart.lng) * meterPerDegLng;
+    const y0 = (pt.lat - lineStart.lat) * meterPerDegLat;
+    const x1 = 0;
+    const y1 = 0;
+    const x2 = (lineEnd.lng - lineStart.lng) * meterPerDegLng;
+    const y2 = (lineEnd.lat - lineStart.lat) * meterPerDegLat;
+
+    const num = Math.abs((y2 - y1) * x0 - (x2 - x1) * y0);
     const den = Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
     return den === 0 ? 0 : num / den;
   };
