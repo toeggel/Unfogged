@@ -1,4 +1,4 @@
-import { lineString, featureCollection, polygon } from "@turf/helpers";
+import { lineString, featureCollection, polygon, feature } from "@turf/helpers";
 import { buffer } from "@turf/buffer";
 import { union } from "@turf/union";
 import { difference } from "@turf/difference";
@@ -103,13 +103,21 @@ const createRoutesPolygon = (
   lines: Feature<LineString>[],
   bufferMeters: number,
 ): Feature<Polygon | MultiPolygon> => {
-  const buffered = buffer(
-    featureCollection(lines),
-    bufferMeters,
-    defaultBufferSettings,
-  ) as FeatureCollection<Polygon>;
+  if (lines.length <= 0) {
+    return polygon([]);
+  }
 
-  return union(buffered) as Feature<Polygon | MultiPolygon>;
+  const buffered = buffer(featureCollection(lines), bufferMeters, defaultBufferSettings);
+
+  if (!buffered || buffered.features.length === 0) {
+    return polygon([]);
+  }
+
+  if (buffered.features.length === 1) {
+    return buffered.features[0];
+  }
+
+  return union(buffered) ?? polygon([]);
 };
 
 const featureDifference = (features: Feature<Polygon | MultiPolygon>[]) => {

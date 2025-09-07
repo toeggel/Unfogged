@@ -14,15 +14,11 @@ const useGeolocation = () => {
     };
 
     if ("geolocation" in navigator) {
-      const watchId = navigator.geolocation.watchPosition(
-        handleSuccess,
-        handleError,
-        {
-          enableHighAccuracy: true,
-          maximumAge: 10000,
-          timeout: 5000,
-        },
-      );
+      const watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
+        enableHighAccuracy: true,
+        maximumAge: 10000,
+        timeout: 5000,
+      });
 
       return () => {
         navigator.geolocation.clearWatch(watchId);

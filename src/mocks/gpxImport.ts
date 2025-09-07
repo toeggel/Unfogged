@@ -3,7 +3,9 @@ import { StrollRoute, RoutePoint } from "./visitedPlaces";
 /** Remove consecutive duplicates (exact same lat/lng) */
 const dedupeConsecutivePoints = (points: RoutePoint[]): RoutePoint[] => {
   return points.filter((p, i, arr) => {
-    if (i === 0) return true;
+    if (i === 0) {
+      return true;
+    }
     const prev = arr[i - 1];
     return p.lat !== prev.lat || p.lng !== prev.lng;
   });
@@ -80,6 +82,7 @@ export const simplifyRoute = (points: RoutePoint[], epsilon: number = 10): Route
 
     const num = Math.abs((y2 - y1) * x0 - (x2 - x1) * y0);
     const den = Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
+
     return den === 0 ? 0 : num / den;
   };
 
