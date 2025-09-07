@@ -7,7 +7,7 @@ import { latLng } from "leaflet";
 import { useImportedRoutes } from "../hooks/useImportedRoutes";
 
 const MAP_CENTER_GUGGACH = latLng(47.401263, 8.533942);
-const FOG_RADIUS_METERS = 60;
+const FOG_RADIUS_METERS = 40;
 const FOG_LEVELS = 1;
 const GPX_FILES = [
   "routes/Workout-2021-08-21-16-51-18.gpx",
@@ -19,6 +19,7 @@ const GPX_FILES = [
   "routes/Workout-2025-07-17-16-12-28.gpx",
   "routes/Workout-2025-08-16-10-28-36.gpx",
   "routes/Workout-2025-09-03-19-54-14.gpx",
+  "routes/Workout-2025-09-07-11-40-11.gpx",
 ];
 
 export const MapView: React.FC = () => {
