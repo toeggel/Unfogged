@@ -1,32 +1,28 @@
 import { useEffect, useState } from "react";
+import { LatLngExpression } from "leaflet";
 
 export const useGeolocation = () => {
-  const [location, setLocation] = useState<GeolocationCoordinates | null>(null);
+  const [userLocation, setUserLocation] = useState<LatLngExpression | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleSuccess = (position: GeolocationPosition) => {
-      setLocation(position.coords);
-    };
-
-    const handleError = (error: GeolocationPositionError) => {
-      setError(error.message);
-    };
-
-    if ("geolocation" in navigator) {
-      const watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
-        enableHighAccuracy: true,
-        maximumAge: 10000,
-        timeout: 5000,
-      });
-
-      return () => {
-        navigator.geolocation.clearWatch(watchId);
-      };
-    } else {
+    if (!("geolocation" in navigator)) {
       setError("Geolocation is not supported by this browser.");
+      return;
     }
+
+    const watcher = navigator.geolocation.watchPosition(
+      (pos) => {
+        setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+      },
+      (err) => {
+        setError(err.message);
+      },
+      { enableHighAccuracy: true },
+    );
+
+    return () => navigator.geolocation.clearWatch(watcher);
   }, []);
 
-  return { location, error };
+  return { userLocation, error };
 };

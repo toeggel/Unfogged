@@ -7,7 +7,8 @@ import { parseGpxToStrollRoute } from "../routes/gpxImport";
  * Ensures loading only happens once (even in React Strict Mode).
  */
 export const useImportedRoutes = (files: string[]) => {
-  const [importedRoutes, setImportedRoutes] = useState<StrollRoute[]>([]);
+  const [routes, setRoutes] = useState<StrollRoute[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all(
@@ -17,12 +18,16 @@ export const useImportedRoutes = (files: string[]) => {
           .then((gpxText) => parseGpxToStrollRoute(gpxText, file)),
       ),
     )
-      .then((routes) => setImportedRoutes(routes))
+      .then((routes) => {
+        setLoading(false);
+        setRoutes(routes);
+      })
       .catch((err) => {
         console.error("Failed to load GPX files:", err);
-        setImportedRoutes([]);
+        setRoutes([]);
+        setLoading(false);
       });
   }, [files]);
 
-  return importedRoutes;
+  return { routes, loading };
 };

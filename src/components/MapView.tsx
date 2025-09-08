@@ -1,11 +1,12 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, LayersControl, CircleMarker } from "react-leaflet";
+import React, { useMemo } from "react";
+import { CircleMarker, LayersControl, MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { buildRouteMask } from "../buildRouteMask";
 import { RouteMaskLayer } from "./RouteMaskLayer";
-import { latLng, LatLngExpression } from "leaflet";
+import { latLng } from "leaflet";
 import { useImportedRoutes } from "../hooks/useImportedRoutes";
 import { FlyToLocation } from "./FlyToLocation";
+import { useGeolocation } from "../hooks/useGeolocation";
 
 const MAP_CENTER_GUGGACH = latLng(47.401263, 8.533942);
 const FOG_RADIUS_METERS = 40;
@@ -24,30 +25,16 @@ const GPX_FILES = [
 ];
 
 export const MapView: React.FC = () => {
-  const importedRoutes = useImportedRoutes(GPX_FILES);
+  const { routes, loading } = useImportedRoutes(GPX_FILES);
+  const { userLocation, error } = useGeolocation();
 
-  const [userLocation, setUserLocation] = useState<LatLngExpression | null>(null);
+  const mask = useMemo(() => buildRouteMask(routes, FOG_RADIUS_METERS, FOG_LEVELS), [routes]);
 
-  const mask = useMemo(() => buildRouteMask(importedRoutes, FOG_RADIUS_METERS, FOG_LEVELS), [importedRoutes]);
+  if (error) {
+    console.warn("Geolocation error:", error);
+  }
 
-  // Ask for location once on mount
-  useEffect(() => {
-    if ("geolocation" in navigator) {
-      const watcher = navigator.geolocation.watchPosition(
-        (pos) => {
-          setUserLocation([pos.coords.latitude, pos.coords.longitude]);
-        },
-        (err) => {
-          console.warn("Geolocation error:", err);
-        },
-        { enableHighAccuracy: true },
-      );
-
-      return () => navigator.geolocation.clearWatch(watcher);
-    }
-  }, []);
-
-  if (!importedRoutes.length) {
+  if (loading) {
     return <div>Loading GPX data…</div>;
   }
 
