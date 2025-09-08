@@ -31,11 +31,6 @@ To get started with the Unfogged PWA, follow these steps:
 
 3. Open your browser:  
    Navigate to `http://localhost:5173` to view the application.
-4. Deplay to github pages:
-
-   ```
-   npm run deploy
-   ```
 
 ## Tech Stack
 

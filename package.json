@@ -12,8 +12,7 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "format": "prettier --write .",
-    "deploy": "vite build && copy dist\\index.html dist\\404.html && gh-pages -d dist"
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@turf/buffer": "^7.2.0",
