@@ -1,12 +1,6 @@
 import { GeoJSON, LayerGroup } from "react-leaflet";
 import type { Feature, Polygon, MultiPolygon } from "geojson";
 
-export interface BufferedRoute {
-  route: Feature<Polygon | MultiPolygon>;
-  opacity?: number;
-  color?: string;
-}
-
 export const RouteMaskLayer = ({
   mask,
   routes,

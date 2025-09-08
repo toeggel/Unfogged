@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { StrollRoute } from "../routes/visitedPlaces";
+import { StrollRoute } from "../buildRouteMask";
 import { parseGpxToStrollRoute } from "../routes/gpxImport";
 
 /**

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, LayersControl } from "react-leaflet";
+import { MapContainer, TileLayer, LayersControl } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { buildRouteMask } from "../buildRouteMask";
 import { RouteMaskLayer } from "./RouteMaskLayer";
@@ -22,7 +22,6 @@ const GPX_FILES = [
 ];
 
 export const MapView: React.FC = () => {
-  const userLocation = MAP_CENTER_GUGGACH;
   const importedRoutes = useImportedRoutes(GPX_FILES);
 
   const mask = useMemo(
