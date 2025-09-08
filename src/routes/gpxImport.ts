@@ -5,6 +5,7 @@ import { RoutePoint, StrollRoute } from "../buildRouteMask";
  * Only extracts the first <trk> and its <trkseg> points.
  */
 export const parseGpxToStrollRoute = async (gpxContent: string, routeName = "Imported GPX"): Promise<StrollRoute> => {
+  console.log("parseGpxToStrollRoute" + routeName);
   const parser = new DOMParser();
   const xml = parser.parseFromString(gpxContent, "application/xml");
 
