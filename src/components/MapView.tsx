@@ -45,9 +45,6 @@ export const MapView: React.FC = () => {
         </LayersControl.BaseLayer>
       </LayersControl>
       <RouteMaskLayer mask={mask.mask} routes={mask.fogRings} />
-      <Marker position={[userLocation.lat, userLocation.lng]}>
-        <Popup>Mocked user location</Popup>
-      </Marker>
     </MapContainer>
   );
 };
