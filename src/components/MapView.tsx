@@ -1,10 +1,11 @@
-import React, { useMemo } from "react";
-import { MapContainer, TileLayer, LayersControl } from "react-leaflet";
+import React, { useEffect, useMemo, useState } from "react";
+import { MapContainer, TileLayer, LayersControl, CircleMarker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { buildRouteMask } from "../buildRouteMask";
 import { RouteMaskLayer } from "./RouteMaskLayer";
-import { latLng } from "leaflet";
+import { latLng, LatLngExpression } from "leaflet";
 import { useImportedRoutes } from "../hooks/useImportedRoutes";
+import { FlyToLocation } from "./FlyToLocation";
 
 const MAP_CENTER_GUGGACH = latLng(47.401263, 8.533942);
 const FOG_RADIUS_METERS = 40;
@@ -25,10 +26,26 @@ const GPX_FILES = [
 export const MapView: React.FC = () => {
   const importedRoutes = useImportedRoutes(GPX_FILES);
 
-  const mask = useMemo(
-    () => buildRouteMask(importedRoutes, FOG_RADIUS_METERS, FOG_LEVELS),
-    [importedRoutes],
-  );
+  const [userLocation, setUserLocation] = useState<LatLngExpression | null>(null);
+
+  const mask = useMemo(() => buildRouteMask(importedRoutes, FOG_RADIUS_METERS, FOG_LEVELS), [importedRoutes]);
+
+  // Ask for location once on mount
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      const watcher = navigator.geolocation.watchPosition(
+        (pos) => {
+          setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+        },
+        (err) => {
+          console.warn("Geolocation error:", err);
+        },
+        { enableHighAccuracy: true },
+      );
+
+      return () => navigator.geolocation.clearWatch(watcher);
+    }
+  }, []);
 
   if (!importedRoutes.length) {
     return <div>Loading GPX data…</div>;
@@ -44,7 +61,19 @@ export const MapView: React.FC = () => {
           <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
         </LayersControl.BaseLayer>
       </LayersControl>
+
       <RouteMaskLayer mask={mask.mask} routes={mask.fogRings} />
+
+      {userLocation && (
+        <>
+          <FlyToLocation position={userLocation} />
+          <CircleMarker
+            center={userLocation}
+            radius={6}
+            pathOptions={{ color: "blue", fillColor: "blue", fillOpacity: 0.6 }}
+          />
+        </>
+      )}
     </MapContainer>
   );
 };
