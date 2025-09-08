@@ -10,18 +10,18 @@ const MAP_CENTER_GUGGACH = latLng(47.401263, 8.533942);
 const FOG_RADIUS_METERS = 60;
 const FOG_LEVELS = 1;
 const GPX_FILES = [
-  "/src/mocks/Workout-2021-08-21-16-51-18.gpx",
-  "/src/mocks/Workout-2023-07-27-15-57-27.gpx",
-  "/src/mocks/Workout-2023-08-03-17-11-26.gpx",
-  "/src/mocks/Workout-2023-08-10-15-36-57.gpx",
-  "/src/mocks/Workout-2023-12-19-10-55-33.gpx",
-  "/src/mocks/Workout-2024-07-16-16-07-28.gpx",
-  "/src/mocks/Workout-2025-07-17-16-12-28.gpx",
-  "/src/mocks/Workout-2025-08-16-10-28-36.gpx",
-  "/src/mocks/Workout-2025-09-03-19-54-14.gpx",
+  "/routes/Workout-2021-08-21-16-51-18.gpx",
+  "/routes/Workout-2023-07-27-15-57-27.gpx",
+  "/routes/Workout-2023-08-03-17-11-26.gpx",
+  "/routes/Workout-2023-08-10-15-36-57.gpx",
+  "/routes/Workout-2023-12-19-10-55-33.gpx",
+  "/routes/Workout-2024-07-16-16-07-28.gpx",
+  "/routes/Workout-2025-07-17-16-12-28.gpx",
+  "/routes/Workout-2025-08-16-10-28-36.gpx",
+  "/routes/Workout-2025-09-03-19-54-14.gpx",
 ];
 
-const MapView: React.FC = () => {
+export const MapView: React.FC = () => {
   const userLocation = MAP_CENTER_GUGGACH;
   const importedRoutes = useImportedRoutes(GPX_FILES);
 
@@ -51,5 +51,3 @@ const MapView: React.FC = () => {
     </MapContainer>
   );
 };
-
-export default MapView;

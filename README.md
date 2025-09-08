@@ -2,75 +2,63 @@
 
 Unfogged is a Progressive Web App (PWA) designed to help users explore their surroundings by visualizing areas they have visited over time. The app features a "fog of war"-style map that reveals visited areas while keeping unvisited areas obscured, encouraging mindful exploration.
 
-## Project Structure
+## Features
 
-```
-unfogged
-├── public
-│   ├── favicon.svg          # Favicon for the application
-│   ├── index.html           # Main HTML file
-│   └── manifest.webmanifest  # PWA metadata
-├── src
-│   ├── assets               # Static assets (images, fonts)
-│   ├── components           # React components
-│   │   ├── MapView.tsx     # Component for rendering the Leaflet map
-│   │   └── Header.tsx       # Component for the application header
-│   ├── hooks                # Custom hooks
-│   │   └── useGeolocation.ts # Hook for managing geolocation
-│   ├── styles               # Stylesheets
-│   │   └── tailwind.css     # Tailwind CSS styles
-│   ├── App.tsx              # Main application component
-│   ├── main.tsx             # Entry point for the React application
-│   └── types                # TypeScript types and interfaces
-│       └── index.ts
-├── .gitignore               # Git ignore file
-├── index.html               # Duplicate of public/index.html for local development
-├── package.json             # npm configuration file
-├── postcss.config.js        # PostCSS configuration
-├── tailwind.config.js       # Tailwind CSS configuration
-├── tsconfig.json            # TypeScript configuration
-└── README.md                # Project documentation
-```
+- Interactive map with "fog of war" effect (Leaflet + React-Leaflet)
+- Tracks your location (with permission) and reveals visited areas
+- Areas not visited for a while become fogged again
+- Frequently visited places stay bright and visible
+- Offline-first: stores your visit history and map data locally (IndexedDB via localForage)
+- Mobile-first, installable as a PWA
+- Fast, lightweight, and privacy-friendly
+
 
 ## Getting Started
 
 To get started with the Unfogged PWA, follow these steps:
 
-1. **Clone the repository:**
-
-   ```
-   git clone <repository-url>
-   cd unfogged-pwa
-   ```
-
-2. **Install dependencies:**
+1. Install dependencies:
 
    ```
    npm install
    ```
 
-3. **Run the development server:**
+2. Run the development server:
 
    ```
    npm run dev
    ```
 
-4. **Open your browser:**
-   Navigate to `http://localhost:3000` to view the application.
+3. Open your browser:  
+   Navigate to `http://localhost:5173` to view the application.
+4. Deplay to github pages:
 
-## Features
+   ```
+   npm run deploy
+   ```
 
-- Track user location and visualize visited areas on a map.
-- Fog of war effect to highlight unexplored regions.
-- Offline-first capabilities using IndexedDB.
-- Mobile-first design with a focus on user experience.
+## Tech Stack
 
-## Future Enhancements
+- [React](https://react.dev/) + [Vite](https://vitejs.dev/)
+- [Tailwind CSS](https://tailwindcss.com/) (planned)
+- [Leaflet](https://leafletjs.com/) & [React-Leaflet](https://react-leaflet.js.org/)
+- [localForage](https://localforage.github.io/localForage/) for offline storage
+- [ESLint](https://eslint.org/) for code quality
 
-- Background sync for location data.
-- Cloud backup options for user data.
-- Gamification elements to encourage exploration.
+## Fog Logic (Planned)
 
-## License
+- Areas are “unfogged” as you visit them.
+- Areas fade back to fog if not visited for a configurable time.
+- Heatmap/brightness for frequently visited places.
+- All logic runs locally for privacy.
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+## Development Notes
+
+- Uses modern React (v19+), Vite, and ES modules.
+- Offline-first: all data is stored in the browser.
+- Map tiles and data caching for offline use (planned).
+- PWA installable on mobile and desktop.
+
+## Deployment
+
+- Static build can be deployed to GitHub Pages or Azure Static Web Apps.

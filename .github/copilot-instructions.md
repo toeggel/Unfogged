@@ -49,3 +49,13 @@ As the AI buddy, your job is to:
 - Optimize for performance on low-end mobile devices
 - Provide ideas for future features (gamification, social, analysis)
 - Always balance developer efficiency with user experience
+
+# Coding Guidelines
+- Use variable holding arrow functions instead of function declarations.
+- Use 'const' for variables that are not reassigned.
+- Use tailwind classes for styling.
+- Use typescript for type safety.
+- Use interfaces for defining types.
+- Use object notation instead of a type alias.
+- Use "export" directly where possible instead of "export default".
+

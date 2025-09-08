@@ -1,4 +1,4 @@
-import { StrollRoute, RoutePoint } from "./visitedPlaces";
+import { RoutePoint, StrollRoute } from "../buildRouteMask";
 
 /** Remove consecutive duplicates (exact same lat/lng) */
 const dedupeConsecutivePoints = (points: RoutePoint[]): RoutePoint[] => {

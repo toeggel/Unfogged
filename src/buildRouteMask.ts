@@ -1,8 +1,8 @@
-import { lineString, featureCollection, polygon, feature } from "@turf/helpers";
+import { lineString, featureCollection, polygon } from "@turf/helpers";
 import { buffer } from "@turf/buffer";
 import { union } from "@turf/union";
 import { difference } from "@turf/difference";
-import type { Feature, FeatureCollection, LineString, Polygon, MultiPolygon } from "geojson";
+import type { Feature, LineString, Polygon, MultiPolygon } from "geojson";
 
 export interface RoutePoint {
   lat: number;

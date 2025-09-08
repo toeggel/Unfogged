@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { StrollRoute } from "../mocks/visitedPlaces";
-import { parseGpxToStrollRoute } from "../mocks/gpxImport";
+import { StrollRoute } from "../routes/visitedPlaces";
+import { parseGpxToStrollRoute } from "../routes/gpxImport";
 
 /**
  * Loads and parses a list of GPX files into StrollRoute objects.
