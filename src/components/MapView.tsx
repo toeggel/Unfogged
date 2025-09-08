@@ -1,12 +1,13 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { CircleMarker, LayersControl, MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { buildRouteMask } from "../buildRouteMask";
+import { buildRouteMask, StrollRoute } from "../buildRouteMask";
 import { RouteMaskLayer } from "./RouteMaskLayer";
 import { latLng } from "leaflet";
 import { useImportedRoutes } from "../hooks/useImportedRoutes";
 import { FlyToLocation } from "./FlyToLocation";
-import { useGeolocation } from "../hooks/useGeolocation";
+import { saveRoute } from "../storage/routeStore";
+import { useLiveStrollRoute } from "../hooks/useLiveRoute";
 
 const MAP_CENTER_GUGGACH = latLng(47.401263, 8.533942);
 const FOG_RADIUS_METERS = 40;
@@ -25,21 +26,39 @@ const GPX_FILES = [
 ];
 
 export const MapView: React.FC = () => {
-  const { routes, loading } = useImportedRoutes(GPX_FILES);
-  const { userLocation, error } = useGeolocation();
+  const { routes: importedRoutes, loading } = useImportedRoutes(GPX_FILES);
+  // const { userLocation, error } = useGeolocation();
+  const { liveRoute, location: userLocation, sessionKey } = useLiveStrollRoute();
 
-  const mask = useMemo(() => buildRouteMask(routes, FOG_RADIUS_METERS, FOG_LEVELS), [routes]);
+  useEffect(() => {
+    if (!liveRoute) {
+      return;
+    }
 
-  if (error) {
-    console.warn("Geolocation error:", error);
-  }
+    const interval = setInterval(() => saveRoute(sessionKey, liveRoute).catch(console.error), 10000);
+    return () => clearInterval(interval);
+  }, [liveRoute]);
+
+  const allRoutes = useMemo(() => {
+    const combined: StrollRoute[] = [...importedRoutes];
+    if (liveRoute) {
+      combined.push(liveRoute);
+    }
+    return combined;
+  }, [importedRoutes, liveRoute]);
+
+  const mask = useMemo(() => buildRouteMask(allRoutes, FOG_RADIUS_METERS, FOG_LEVELS), [allRoutes]);
+
+  // if (error) {
+  //   console.warn("Geolocation error:", error);
+  // }
 
   if (loading) {
     return <div>Loading GPX data…</div>;
   }
 
   return (
-    <MapContainer center={MAP_CENTER_GUGGACH} zoom={15} style={{ height: "100vh" }}>
+    <MapContainer center={userLocation || MAP_CENTER_GUGGACH} zoom={15} style={{ height: "100vh" }}>
       <LayersControl position="topright">
         <LayersControl.BaseLayer checked name="OpenStreetMap">
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

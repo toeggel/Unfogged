@@ -40,7 +40,7 @@ export const parseGpxToStrollRoute = async (gpxContent: string, routeName = "Imp
  * @param points Array of RoutePoint
  * @param epsilon Tolerance in meters (smaller = more points kept)
  */
-const simplifyRoute = (points: RoutePoint[], epsilon: number = 10): RoutePoint[] => {
+export const simplifyRoute = (points: RoutePoint[], epsilon: number = 10): RoutePoint[] => {
   if (points.length < 3) {
     return points;
   }
