@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { CircleMarker, LayersControl, MapContainer, TileLayer } from "react-leaflet";
+import { LayersControl, MapContainer, Marker, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { buildRouteMask, StrollRoute } from "../buildRouteMask";
 import { RouteMaskLayer } from "./RouteMaskLayer";
@@ -47,7 +47,10 @@ export const MapView: React.FC = () => {
     return combined;
   }, [importedRoutes, liveRoute]);
 
-  const mask = useMemo(() => buildRouteMask(allRoutes, FOG_RADIUS_METERS, FOG_LEVELS), [allRoutes]);
+  const mask = useMemo(() => {
+    let routeMask = buildRouteMask(allRoutes, FOG_RADIUS_METERS, FOG_LEVELS);
+    return { ...routeMask, version: crypto.randomUUID() };
+  }, [allRoutes]);
 
   // if (error) {
   //   console.warn("Geolocation error:", error);
@@ -68,18 +71,10 @@ export const MapView: React.FC = () => {
         </LayersControl.BaseLayer>
       </LayersControl>
 
-      <RouteMaskLayer mask={mask.mask} routes={mask.fogRings} />
+      <RouteMaskLayer key={mask.version} mask={mask.mask} routes={mask.fogRings} />
 
-      {userLocation && (
-        <>
-          <FlyToLocation position={userLocation} />
-          <CircleMarker
-            center={userLocation}
-            radius={6}
-            pathOptions={{ color: "blue", fillColor: "blue", fillOpacity: 0.6 }}
-          />
-        </>
-      )}
+      <FlyToLocation position={userLocation || MAP_CENTER_GUGGACH} />
+      <Marker position={userLocation || MAP_CENTER_GUGGACH}></Marker>
     </MapContainer>
   );
 };
