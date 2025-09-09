@@ -8,6 +8,7 @@ import { useImportedRoutes } from "../hooks/useImportedRoutes";
 import { FlyToLocation } from "./FlyToLocation";
 import { saveRoute } from "../storage/routeStore";
 import { useLiveStrollRoute } from "../hooks/useLiveRoute";
+import { customSvgIcon } from "../map/map-position";
 
 const MAP_CENTER_GUGGACH = latLng(47.401263, 8.533942);
 const FOG_RADIUS_METERS = 40;
@@ -74,7 +75,7 @@ export const MapView: React.FC = () => {
       <RouteMaskLayer key={mask.version} mask={mask.mask} routes={mask.fogRings} />
 
       <FlyToLocation position={userLocation || MAP_CENTER_GUGGACH} />
-      <Marker position={userLocation || MAP_CENTER_GUGGACH}></Marker>
+      <Marker position={userLocation || MAP_CENTER_GUGGACH} icon={customSvgIcon}></Marker>
     </MapContainer>
   );
 };
