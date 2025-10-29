@@ -24,6 +24,13 @@ const GPX_FILES = [
   "routes/Workout-2025-08-16-10-28-36.gpx",
   "routes/Workout-2025-09-03-19-54-14.gpx",
   "routes/Workout-2025-09-07-11-40-11.gpx",
+  "routes/Workout-2025-09-12-16-01-00.gpx",
+  "routes/Workout-2025-10-29-13-15-01.gpx",
+  "routes/Workout-2025-11-01-11-56-41.gpx",
+  "routes/Workout-2025-11-14-13-31-50.gpx",
+  "routes/Workout-2025-11-20-20-27-41.gpx",
+  "routes/Workout-2025-11-22-11-53-06.gpx",
+  "routes/Workout-2025-12-23-14-18-55.gpx",
 ];
 
 export const MapView: React.FC = () => {
