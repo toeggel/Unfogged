@@ -12,7 +12,7 @@ export const RouteMaskLayer = ({
   maskColor?: string;
   opacity?: number;
 }) => {
-  let opacityStep = opacity / (routes.length + 1);
+  const opacityStep = opacity / (routes.length + 1);
 
   if (!mask) {
     return null;
@@ -38,7 +38,7 @@ export const RouteMaskLayer = ({
           pathOptions={{
             interactive: false,
             fillColor: color,
-            fillOpacity: opacityStep * (idx + 1),
+            fillOpacity: opacityStep * idx,
             weight: 0,
           }}
         />

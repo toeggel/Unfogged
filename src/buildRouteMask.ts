@@ -3,6 +3,7 @@ import { buffer } from "@turf/buffer";
 import { union } from "@turf/union";
 import { difference } from "@turf/difference";
 import type { Feature, LineString, Polygon, MultiPolygon } from "geojson";
+import { splitArrayIntoChunks } from "./utils/array-helper";
 
 export interface RoutePoint {
   lat: number;
@@ -31,8 +32,17 @@ const defaultBufferSettings = {
 };
 
 /**
- * Builds a “world mask” with holes cut where your buffered routes are.
+ * Builds a “world mask” with holes cut where the buffered routes are.
  * Returns null if nothing is left to mask.
+ */
+
+/**
+ * Builds a world mask with holes cut where buffered routes are, plus graduated fog rings.
+ *
+ * @param routes - Array of StrollRoute objects with GPS coordinates
+ * @param bufferMeters - Distance in meters to buffer around each route
+ * @param fogLevels - Number of graduated fog rings around routes (default: 2)
+ * @returns Mask polygon with holes for routes, and array of fog ring polygons
  */
 export const buildRouteMask = (
   routes: StrollRoute[],
@@ -42,20 +52,34 @@ export const buildRouteMask = (
   mask: Feature<Polygon | MultiPolygon> | null;
   fogRings: Feature<Polygon | MultiPolygon>[];
 } => {
-  const lines: Feature<LineString>[] = createLine(routes);
+  const lines: Feature<LineString>[] = createLine(routes.reverse());
 
   if (lines.length === 0) {
     return { mask: null, fogRings: [] };
   }
 
   const allRoutes = createRoutesPolygon(lines, bufferMeters);
-  const worldMask = featureDifference([world, allRoutes]);
+  let worldMask = featureDifference([world, allRoutes]);
 
-  let fogRings = createFogRings(fogLevels, bufferMeters, lines, allRoutes);
+  const parts = splitArrayIntoChunks(lines, 5);
+  const fogRings: Feature<Polygon | MultiPolygon>[] = [];
+  let previousUnion: Feature<Polygon | MultiPolygon> | null = null;
+
+  for (let i = 0; i < parts.length; i++) {
+    const currentPoly = createRoutesPolygon(parts[i], bufferMeters);
+
+    const uniquePoly =
+      previousUnion != null ? (featureDifference([currentPoly, previousUnion]) ?? currentPoly) : currentPoly;
+
+    fogRings.push(...createFogRings(fogLevels, bufferMeters, parts[i], uniquePoly));
+
+    previousUnion =
+      previousUnion != null ? (union(featureCollection([previousUnion, currentPoly])) ?? previousUnion) : currentPoly;
+  }
 
   return {
     mask: worldMask,
-    fogRings: fogRings,
+    fogRings,
   };
 };
 
@@ -72,7 +96,7 @@ const createFogRings = (
   const bufferStep = bufferMeters / (fogLevels + 1);
   const foggedRoutes: Feature<Polygon | MultiPolygon>[] = [];
 
-  for (let i = 1; i <= fogLevels; i++) {
+  for (let i = 0; i < fogLevels; i++) {
     const distance = bufferStep * i;
     const routesPolygon = createRoutesPolygon(lines, distance);
     foggedRoutes.push(routesPolygon);
@@ -82,14 +106,10 @@ const createFogRings = (
   const foggedRings = foggedRoutes.reverse().map((current, i) => {
     const innerRing = i === 0 ? null : featureDifference([mainRoutePolygon, foggedRoutes[i - 1]]);
 
-    return featureDifference(
-      innerRing ? [mainRoutePolygon, current, innerRing] : [mainRoutePolygon, current],
-    );
+    return featureDifference(innerRing ? [mainRoutePolygon, current, innerRing] : [mainRoutePolygon, current]);
   });
 
-  return foggedRings
-    .filter((ring): ring is Feature<Polygon | MultiPolygon> => ring !== null)
-    .reverse();
+  return foggedRings.filter((ring): ring is Feature<Polygon | MultiPolygon> => ring !== null).reverse();
 };
 
 const createLine = (routes: StrollRoute[]) => {
@@ -99,10 +119,7 @@ const createLine = (routes: StrollRoute[]) => {
     .map((coords) => lineString(coords));
 };
 
-const createRoutesPolygon = (
-  lines: Feature<LineString>[],
-  bufferMeters: number,
-): Feature<Polygon | MultiPolygon> => {
+const createRoutesPolygon = (lines: Feature<LineString>[], bufferMeters: number): Feature<Polygon | MultiPolygon> => {
   if (lines.length <= 0) {
     return polygon([]);
   }
