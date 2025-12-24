@@ -3,25 +3,28 @@
 ## 🧭 Project Vision
 
 The app encourages urban or natural exploration by tracking user movement and gradually revealing a "fog of war"-style map:
+
 - Areas the user visits are "unfogged" and become visible.
 - Areas not visited for a long time become fogged again.
 - Frequently visited places stay bright and visible.
-- The map gives users an intuitive sense of where they’ve been — and importantly — where they *haven’t*.
+- The map gives users an intuitive sense of where they’ve been — and importantly — where they _haven’t_.
 
 The user wants this as a personal tool to discover new places in their local environment. It should work offline and ideally encourage mindful exploration by highlighting “unfamiliar” or less-visited areas when planning a walk or stroll.
 
 ## 🧰 Technical Stack
+
 - **Frontend:** React + Vite + TypeScript
 - **Styling:** Tailwind CSS
 - **Map rendering:** Leaflet.js with React-Leaflet
 - **Storage:** IndexedDB via `localForage` (offline-first)
 - **Deployment:**
-   - If static-only: GitHub Pages
-   - If backend needed later: Azure Static Web Apps + Azure Functions
+  - If static-only: GitHub Pages
+  - If backend needed later: Azure Static Web Apps + Azure Functions
 - **Form factor:** Progressive Web App (PWA), installable, mobile-first UX
 - **Offline Mode:** Full offline usability required. Must cache map tiles and location data.
 
 ## 🔧 Key Features
+
 - Track user location periodically (when granted and active)
 - Render fog/unfog states on a map
 - Store visit history and timestamps locally
@@ -31,6 +34,7 @@ The user wants this as a personal tool to discover new places in their local env
 - Optional background sync or cloud backup in future versions
 
 ## 👤 AI Agent Role
+
 - Help design a modular, clean architecture
 - Suggest React component structures and Tailwind design choices
 - Guide efficient offline data handling (e.g., IndexedDB, caching)
@@ -40,6 +44,7 @@ The user wants this as a personal tool to discover new places in their local env
 - Always balance developer efficiency with user experience
 
 ## ✅ What Is Already Implemented
+
 - React + Vite + TypeScript: Modern, fast, and type-safe setup.
 - Tailwind CSS: Installed and configured for utility-first styling.
 - Leaflet + React-Leaflet: Map rendering is working.
@@ -52,6 +57,7 @@ The user wants this as a personal tool to discover new places in their local env
 - **Viewport-based rendering:** Only cells in the current map viewport are loaded and rendered for performance.
 
 ## ❌ What’s Missing (Compared to Vision)
+
 - **Heatmap/Brightness:** No visual indication of frequently visited areas (visit count not yet visualized).
 - **Efficient Storage:** No batching or grid-based storage optimizations for large areas.
 - **Map Tile Caching:** No offline map tile caching yet.
@@ -72,9 +78,9 @@ The user wants this as a personal tool to discover new places in their local env
 
 3. **Fog State Calculation**
    - For each cell, calculate its fog state:
-      - Unfogged: recently visited.
-      - Partially fogged: visited, but not recently.
-      - Fully fogged: never or long ago visited.
+     - Unfogged: recently visited.
+     - Partially fogged: visited, but not recently.
+     - Fully fogged: never or long ago visited.
    - Optionally, use visit count for brightness/heatmap.
 
 4. **Fog Overlay Rendering**
@@ -103,8 +109,9 @@ The user wants this as a personal tool to discover new places in their local env
    - Suggest unexplored/forgotten areas to the user.
 
 10. **Battery & Privacy**
-   - Throttle/batch location updates.
-   - Allow users to pause tracking.
+
+- Throttle/batch location updates.
+- Allow users to pause tracking.
 
 ## 📝 Next Steps (Suggested Order)
 

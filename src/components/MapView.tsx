@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { LayersControl, MapContainer, Marker, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { buildRouteMask, StrollRoute } from "../buildRouteMask";
+import { buildRouteMask, StrollRoute } from "../routes/buildRouteMask";
 import { RouteMaskLayer } from "./RouteMaskLayer";
 import { latLng } from "leaflet";
 import { useImportedRoutes } from "../hooks/useImportedRoutes";
@@ -56,8 +56,8 @@ export const MapView: React.FC = () => {
   }, [importedRoutes, liveRoute]);
 
   const mask = useMemo(() => {
-    let routeMask = buildRouteMask(allRoutes, FOG_RADIUS_METERS, FOG_LEVELS);
-    return { ...routeMask, version: crypto.randomUUID() };
+    const { mask, fogRings } = buildRouteMask(allRoutes, FOG_RADIUS_METERS, FOG_LEVELS);
+    return { mask, fogRings, version: crypto.randomUUID() };
   }, [allRoutes]);
 
   // if (error) {

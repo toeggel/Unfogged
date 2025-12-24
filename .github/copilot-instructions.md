@@ -51,6 +51,7 @@ As the AI buddy, your job is to:
 - Always balance developer efficiency with user experience
 
 # Coding Guidelines
+
 - Use variable holding arrow functions instead of function declarations.
 - Use 'const' for variables that are not reassigned.
 - Use tailwind classes for styling.
@@ -58,4 +59,3 @@ As the AI buddy, your job is to:
 - Use interfaces for defining types.
 - Use object notation instead of a type alias.
 - Use "export" directly where possible instead of "export default".
-

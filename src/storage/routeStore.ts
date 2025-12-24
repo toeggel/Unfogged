@@ -1,5 +1,5 @@
 ﻿import localforage from "localforage";
-import { StrollRoute } from "../buildRouteMask";
+import { StrollRoute } from "../routes/buildRouteMask";
 
 const routeStore = localforage.createInstance({
   name: "Unfogged",
