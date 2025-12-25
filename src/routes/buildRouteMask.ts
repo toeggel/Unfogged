@@ -8,13 +8,14 @@ import { splitArrayIntoChunks } from "../utils/array-helper";
 export interface RoutePoint {
   lat: number;
   lng: number;
-  timestamp?: number;
 }
 
 export interface StrollRoute {
   name: string;
   description?: string;
   points: RoutePoint[];
+  line: Feature<LineString>;
+  timestamp?: Date;
 }
 
 const world = polygon([
@@ -48,18 +49,22 @@ export const buildRouteMask = (
   mask: Feature<Polygon | MultiPolygon> | null;
   fogRings: Feature<Polygon | MultiPolygon>[];
 } => {
+  const startDate = new Date("2021-6-25");
+
   if (routes.length === 0) {
     return { mask: null, fogRings: [] };
   }
 
-  // We have the routes in chronological order, so reverse to have latest on top
-  const routesOrderedByTime = [...routes].reverse();
-  const lines: Feature<LineString>[] = createLine(routesOrderedByTime);
+  const routesOrderedByTime = [...routes]
+    .filter((r) => r.timestamp && r.timestamp >= startDate)
+    .sort((a, b) => (b.timestamp?.getTime() ?? 0) - (a.timestamp?.getTime() ?? 0));
+  // const lines: Feature<LineString>[] = createLine(routesOrderedByTime);
+  const lines = routesOrderedByTime.map((r) => r.line);
 
   const allRoutes = bufferAndMergeRoutes(lines, bufferMeters);
   const worldMask = featureDifference([world, allRoutes]);
 
-  const fogRings = createLayeredFogRings(lines, bufferMeters, fogLevels);
+  const fogRings = createLayeredFogRings(routesOrderedByTime, bufferMeters, fogLevels, startDate);
 
   return {
     mask: worldMask,
@@ -76,16 +81,17 @@ export const buildRouteMask = (
  * @returns Array of fog ring polygons with graduated opacity
  */
 const createLayeredFogRings = (
-  lines: Feature<LineString>[],
+  routes: StrollRoute[],
   bufferMeters: number,
   fogLevels: number,
+  startDate?: Date,
 ): Feature<Polygon | MultiPolygon>[] => {
-  const groups = splitArrayIntoChunks(lines, 5);
+  const groups = splitArrayIntoChunks(routes, 5, startDate);
   const fogRings: Feature<Polygon | MultiPolygon>[] = [];
   let previousUnion: Feature<Polygon | MultiPolygon> | null = null;
 
   for (let i = 0; i < groups.length; i++) {
-    const group = groups[i];
+    const group = groups[i].map((r) => r.line);
     const currentPolygon = bufferAndMergeRoutes(group, bufferMeters);
 
     const uniquePolygon =

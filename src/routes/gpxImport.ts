@@ -1,3 +1,4 @@
+import { lineString } from "@turf/helpers";
 import { RoutePoint, StrollRoute } from "./buildRouteMask";
 
 /**
@@ -13,25 +14,30 @@ export const parseGpxToStrollRoute = async (gpxContent: string, routeName = "Imp
   const description = xml.querySelector("trk > desc")?.textContent?.trim() || undefined;
 
   const points: RoutePoint[] = [];
+  let timestamp: Date | undefined;
   xml.querySelectorAll("trkpt").forEach((pt) => {
     const lat = parseFloat(pt.getAttribute("lat") || "");
     const lng = parseFloat(pt.getAttribute("lon") || "");
     const time = pt.querySelector("time")?.textContent;
+    timestamp = time ? new Date(time) : (timestamp ?? undefined);
     points.push({
       lat,
       lng,
-      timestamp: time ? Date.parse(time) : undefined,
     });
   });
 
   const simplified = simplifyRoute(points, 10);
 
-  console.log(`GPX Import: ${points.length} points, ${simplified.length} after simplification.`);
+  console.log(
+    `GPX Import: ${points.length} points, ${simplified.length} after simplification. ${timestamp ? `Timestamp: ${timestamp.toISOString()}` : "No timestamp found."}`,
+  );
 
   return {
     name,
     description,
     points: simplified,
+    line: lineString(simplified.map((p) => [p.lng, p.lat])),
+    timestamp,
   };
 };
 
