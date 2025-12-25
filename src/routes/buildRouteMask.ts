@@ -39,26 +39,25 @@ const defaultBufferSettings = {
  * @param routes - Array of StrollRoute objects with GPS coordinates
  * @param bufferMeters - Distance in meters to buffer around each route
  * @param fogLevels - Number of graduated fog rings around routes
+ * @param startDate - Optional start date to filter routes; only routes on or after this date will be included
  * @returns Mask polygon with holes for routes, and array of fog ring polygons
  */
 export const buildRouteMask = (
   routes: StrollRoute[],
   bufferMeters: number,
   fogLevels: number,
+  startDate?: Date,
 ): {
   mask: Feature<Polygon | MultiPolygon> | null;
   fogRings: Feature<Polygon | MultiPolygon>[];
 } => {
-  const startDate = new Date("2021-6-25");
-
   if (routes.length === 0) {
     return { mask: null, fogRings: [] };
   }
 
   const routesOrderedByTime = [...routes]
-    .filter((r) => r.timestamp && r.timestamp >= startDate)
+    .filter((r) => r.timestamp && (!startDate || r.timestamp >= startDate))
     .sort((a, b) => (b.timestamp?.getTime() ?? 0) - (a.timestamp?.getTime() ?? 0));
-  // const lines: Feature<LineString>[] = createLine(routesOrderedByTime);
   const lines = routesOrderedByTime.map((r) => r.line);
 
   const allRoutes = bufferAndMergeRoutes(lines, bufferMeters);
