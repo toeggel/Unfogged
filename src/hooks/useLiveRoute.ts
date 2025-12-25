@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useMemo } from "react";
-import { RoutePoint, StrollRoute } from "../buildRouteMask";
+import { RoutePoint, StrollRoute } from "../routes/buildRouteMask";
 import { simplifyRoute } from "../routes/gpxImport";
 
 /**

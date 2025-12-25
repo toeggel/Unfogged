@@ -1,4 +1,4 @@
-import { RoutePoint, StrollRoute } from "../buildRouteMask";
+import { RoutePoint, StrollRoute } from "./buildRouteMask";
 
 /**
  * Parses a GPX file (as string or XMLDocument) and returns a StrollRoute object.

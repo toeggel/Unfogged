@@ -12,7 +12,6 @@ Unfogged is a Progressive Web App (PWA) designed to help users explore their sur
 - Mobile-first, installable as a PWA
 - Fast, lightweight, and privacy-friendly
 
-
 ## Getting Started
 
 To get started with the Unfogged PWA, follow these steps:
