@@ -53,7 +53,7 @@ export const buildRouteMask = (
   }
 
   // We have the routes in chronological order, so reverse to have latest on top
-  const routesOrderedByTime = routes.reverse();
+  const routesOrderedByTime = [...routes].reverse();
   const lines: Feature<LineString>[] = createLine(routesOrderedByTime);
 
   const allRoutes = bufferAndMergeRoutes(lines, bufferMeters);
