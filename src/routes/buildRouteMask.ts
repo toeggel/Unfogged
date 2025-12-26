@@ -3,7 +3,6 @@ import { buffer } from "@turf/buffer";
 import { union } from "@turf/union";
 import { difference } from "@turf/difference";
 import type { Feature, LineString, Polygon, MultiPolygon } from "geojson";
-import { splitArrayIntoChunks } from "../utils/array-helper";
 
 export interface RoutePoint {
   lat: number;
@@ -16,6 +15,11 @@ export interface StrollRoute {
   points: RoutePoint[];
   line: Feature<LineString>;
   timestamp?: Date;
+}
+
+export interface FogRing {
+  feature: Feature<Polygon | MultiPolygon>;
+  date?: Date;
 }
 
 const world = polygon([
@@ -47,24 +51,19 @@ export const buildRouteMask = (
   fogLevels: number,
 ): {
   mask: Feature<Polygon | MultiPolygon> | null;
-  fogRings: Feature<Polygon | MultiPolygon>[];
+  fogRings: FogRing[];
 } => {
-  const startDate = new Date("2021-6-25");
-
   if (routes.length === 0) {
     return { mask: null, fogRings: [] };
   }
 
-  const routesOrderedByTime = [...routes]
-    .filter((r) => r.timestamp && r.timestamp >= startDate)
-    .sort((a, b) => (b.timestamp?.getTime() ?? 0) - (a.timestamp?.getTime() ?? 0));
-  // const lines: Feature<LineString>[] = createLine(routesOrderedByTime);
+  const routesOrderedByTime = [...routes].sort((a, b) => (b.timestamp?.getTime() ?? 0) - (a.timestamp?.getTime() ?? 0));
   const lines = routesOrderedByTime.map((r) => r.line);
 
   const allRoutes = bufferAndMergeRoutes(lines, bufferMeters);
   const worldMask = featureDifference([world, allRoutes]);
 
-  const fogRings = createLayeredFogRings(routesOrderedByTime, bufferMeters, fogLevels, startDate);
+  const fogRings = createLayeredFogRings(routesOrderedByTime, bufferMeters, fogLevels);
 
   return {
     mask: worldMask,
@@ -73,31 +72,27 @@ export const buildRouteMask = (
 };
 
 /**
- * Creates layered fog rings by processing routes in chunks, with newer routes having different fog levels than older ones.
+ * Creates layered fog rings for each route individually with date information.
  *
- * @param lines - Array of LineString features representing all routes
+ * @param routes - Array of StrollRoute objects with GPS coordinates
  * @param bufferMeters - Distance in meters to buffer around each route
- * @param fogLevels - Number of graduated fog rings around each chunk
- * @returns Array of fog ring polygons with graduated opacity
+ * @param fogLevels - Number of graduated fog rings around each route
+ * @returns Array of fog ring objects with features and dates
  */
-const createLayeredFogRings = (
-  routes: StrollRoute[],
-  bufferMeters: number,
-  fogLevels: number,
-  startDate?: Date,
-): Feature<Polygon | MultiPolygon>[] => {
-  const groups = splitArrayIntoChunks(routes, 5, startDate);
-  const fogRings: Feature<Polygon | MultiPolygon>[] = [];
+const createLayeredFogRings = (routes: StrollRoute[], bufferMeters: number, fogLevels: number): FogRing[] => {
+  const fogRings: FogRing[] = [];
   let previousUnion: Feature<Polygon | MultiPolygon> | null = null;
 
-  for (let i = 0; i < groups.length; i++) {
-    const group = groups[i].map((r) => r.line);
-    const currentPolygon = bufferAndMergeRoutes(group, bufferMeters);
+  for (let i = 0; i < routes.length; i++) {
+    const route = routes[i];
+    const lines = [route.line];
+    const currentPolygon = bufferAndMergeRoutes(lines, bufferMeters);
 
     const uniquePolygon =
       previousUnion != null ? (featureDifference([currentPolygon, previousUnion]) ?? currentPolygon) : currentPolygon;
 
-    fogRings.push(...createFogRings(fogLevels, bufferMeters, group, uniquePolygon));
+    const routeFogRings = createFogRings(fogLevels, bufferMeters, lines, uniquePolygon);
+    fogRings.push(...routeFogRings.map((feature) => ({ feature, date: route.timestamp })));
 
     previousUnion =
       previousUnion != null
