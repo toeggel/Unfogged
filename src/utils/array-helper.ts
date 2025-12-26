@@ -5,7 +5,7 @@ export const splitArrayIntoChunks = (routes: FogRing[], chunks: number, startDat
     return [];
   }
 
-  // If no firstDate provided, split by array size
+  // If no startDate provided, split by array size
   if (!startDate) {
     const result: FogRing[][] = [];
     const chunkSize = Math.ceil(routes.length / chunks);
