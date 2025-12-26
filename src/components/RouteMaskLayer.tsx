@@ -9,14 +9,15 @@ export const RouteMaskLayer = ({
   startDate,
   maskColor: color = "#000",
   opacity = 0.9,
+  chunks = 10,
 }: {
   mask: Feature<Polygon | MultiPolygon> | null;
   routes: FogRing[];
   startDate?: Date;
   maskColor?: string;
   opacity?: number;
+  chunks?: number;
 }) => {
-  const chunks = 10;
   const groups = splitArrayIntoChunks(routes, chunks, startDate);
 
   if (!mask) {
