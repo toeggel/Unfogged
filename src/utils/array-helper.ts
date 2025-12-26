@@ -1,13 +1,13 @@
-import { StrollRoute } from "../routes/buildRouteMask";
+import { FogRing } from "../routes/buildRouteMask";
 
-export const splitArrayIntoChunks = (routes: StrollRoute[], chunks: number, startDate?: Date): StrollRoute[][] => {
+export const splitArrayIntoChunks = (routes: FogRing[], chunks: number, startDate?: Date): FogRing[][] => {
   if (chunks <= 0) {
     return [];
   }
 
   // If no firstDate provided, split by array size
   if (!startDate) {
-    const result: StrollRoute[][] = [];
+    const result: FogRing[][] = [];
     const chunkSize = Math.ceil(routes.length / chunks);
 
     for (let i = 0; i < routes.length; i += chunkSize) {
@@ -25,17 +25,17 @@ export const splitArrayIntoChunks = (routes: StrollRoute[], chunks: number, star
   const chunkDuration = totalDuration / chunks;
 
   // Create N empty chunks
-  const result: StrollRoute[][] = Array.from({ length: chunks }, () => []);
+  const result: FogRing[][] = Array.from({ length: chunks }, () => []);
 
   // Assign each route to the appropriate chunk based on its timestamp
   routes.forEach((route) => {
-    if (!route.timestamp) {
+    if (!route.date) {
       // Routes without timestamp go to the last chunk
       result[chunks - 1].push(route);
       return;
     }
 
-    const routeTime = route.timestamp.getTime();
+    const routeTime = route.date.getTime();
 
     // Calculate which chunk this route belongs to
     const timeSinceStart = routeTime - startTime;

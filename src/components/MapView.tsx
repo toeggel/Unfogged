@@ -35,6 +35,7 @@ const GPX_FILES = [
   "routes/Workout-2025-11-20-20-27-41.gpx",
   "routes/Workout-2025-11-22-11-53-06.gpx",
   "routes/Workout-2025-12-23-14-18-55.gpx",
+  "routes/Workout-2025-12-26-14-36-11.gpx",
 ];
 
 export const MapView: React.FC = () => {
@@ -61,10 +62,14 @@ export const MapView: React.FC = () => {
     return combined;
   }, [importedRoutes, liveRoute]);
 
-  const mask = useMemo(() => {
-    const { mask, fogRings } = buildRouteMask(allRoutes, FOG_RADIUS_METERS, FOG_LEVELS, startDate);
+  const mask1 = useMemo(() => {
+    const { mask, fogRings } = buildRouteMask(allRoutes, FOG_RADIUS_METERS, FOG_LEVELS);
     return { mask, fogRings, version: crypto.randomUUID() };
-  }, [allRoutes, startDate]);
+  }, [allRoutes]);
+
+  const mask = useMemo(() => {
+    return { ...mask1, version: crypto.randomUUID() };
+  }, [mask1, startDate]);
 
   // if (error) {
   //   console.warn("Geolocation error:", error);
@@ -86,7 +91,7 @@ export const MapView: React.FC = () => {
           </LayersControl.BaseLayer>
         </LayersControl>
 
-        <RouteMaskLayer key={mask.version} mask={mask.mask} routes={mask.fogRings} />
+        <RouteMaskLayer key={mask.version} mask={mask.mask} routes={mask.fogRings} startDate={startDate} />
 
         <FlyToLocation position={userLocation || MAP_CENTER_GUGGACH} />
         <Marker position={userLocation || MAP_CENTER_GUGGACH} icon={customSvgIcon}></Marker>
