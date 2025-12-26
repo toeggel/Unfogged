@@ -14,7 +14,6 @@ import { DateRangeSlider } from "./DateRangeSlider";
 const MAP_CENTER_GUGGACH = latLng(47.401263, 8.533942);
 const FOG_RADIUS_METERS = 40;
 const FOG_LEVELS = 1;
-const DEFAULT_START_DATE = new Date("2021-6-25");
 const MIN_DATE = new Date("2021-1-1");
 const MAX_DATE = new Date();
 const GPX_FILES = [
@@ -43,7 +42,8 @@ export const MapView: React.FC = () => {
   // const { userLocation, error } = useGeolocation();
   const { liveRoute, location: userLocation, sessionKey } = useLiveStrollRoute();
 
-  const [startDate, setStartDate] = useState<Date>(DEFAULT_START_DATE);
+  const [startDate, setStartDate] = useState<Date>(MIN_DATE);
+  const [minDate, setMinDate] = useState<Date>(MIN_DATE);
 
   useEffect(() => {
     if (!liveRoute) {
@@ -62,14 +62,23 @@ export const MapView: React.FC = () => {
     return combined;
   }, [importedRoutes, liveRoute]);
 
-  const mask1 = useMemo(() => {
+  const mask = useMemo(() => {
     const { mask, fogRings } = buildRouteMask(allRoutes, FOG_RADIUS_METERS, FOG_LEVELS);
     return { mask, fogRings, version: crypto.randomUUID() };
   }, [allRoutes]);
 
-  const mask = useMemo(() => {
-    return { ...mask1, version: crypto.randomUUID() };
-  }, [mask1, startDate]);
+  useEffect(() => {
+    const dateOfFirstRoute = allRoutes
+      .map((r) => r.timestamp)
+      .filter((timestamp) => !!timestamp)
+      .sort((a, b) => a.getTime() - b.getTime())[0];
+
+    if (dateOfFirstRoute) {
+      const beginningOfYear = new Date(dateOfFirstRoute.getFullYear(), 0, 1);
+      setStartDate(beginningOfYear);
+      setMinDate(beginningOfYear);
+    }
+  }, [allRoutes]);
 
   // if (error) {
   //   console.warn("Geolocation error:", error);
@@ -91,12 +100,17 @@ export const MapView: React.FC = () => {
           </LayersControl.BaseLayer>
         </LayersControl>
 
-        <RouteMaskLayer key={mask.version} mask={mask.mask} routes={mask.fogRings} startDate={startDate} />
+        <RouteMaskLayer
+          key={`${startDate}-${mask.version}`}
+          mask={mask.mask}
+          routes={mask.fogRings}
+          startDate={startDate}
+        />
 
         <FlyToLocation position={userLocation || MAP_CENTER_GUGGACH} />
         <Marker position={userLocation || MAP_CENTER_GUGGACH} icon={customSvgIcon}></Marker>
       </MapContainer>
-      <DateRangeSlider startDate={startDate} minDate={MIN_DATE} maxDate={MAX_DATE} onDateChange={setStartDate} />
+      <DateRangeSlider startDate={startDate} minDate={minDate} maxDate={MAX_DATE} onDateChange={setStartDate} />
     </>
   );
 };

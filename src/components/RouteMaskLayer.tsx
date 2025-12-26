@@ -1,5 +1,5 @@
 import { GeoJSON, LayerGroup } from "react-leaflet";
-import type { Feature, Polygon, MultiPolygon } from "geojson";
+import type { Feature, MultiPolygon, Polygon } from "geojson";
 import { FogRing } from "../routes/buildRouteMask";
 import { splitArrayIntoChunks } from "../utils/array-helper";
 
@@ -16,20 +16,14 @@ export const RouteMaskLayer = ({
   maskColor?: string;
   opacity?: number;
 }) => {
-  // startDate = new Date("2025-04-01");
-  let groups = splitArrayIntoChunks(
-    routes
-      .sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0))
-      .map((r) => ({ feature: r.feature, date: r.date })),
-    10,
-    startDate,
-  );
-
-  const opacityStep = opacity / groups.length;
+  const chunks = 10;
+  const groups = splitArrayIntoChunks(routes, chunks, startDate);
 
   if (!mask) {
     return null;
   }
+
+  const opacityStep = opacity / groups.length;
 
   return (
     <LayerGroup>
@@ -44,24 +38,20 @@ export const RouteMaskLayer = ({
       />
 
       {/* level of fog rings */}
-      {groups.map((g, i) => {
-        const opacity = opacityStep * i;
-
-        return g.map((fogRing, idx) => {
-          return (
-            <GeoJSON
-              key={idx}
-              data={fogRing.feature}
-              pathOptions={{
-                interactive: false,
-                fillColor: color,
-                fillOpacity: opacity,
-                weight: 0,
-              }}
-            />
-          );
-        });
-      })}
+      {groups.map((g, i) =>
+        g.map((fogRing, idx) => (
+          <GeoJSON
+            key={`${i}-${idx}`}
+            data={fogRing.feature}
+            pathOptions={{
+              interactive: false,
+              fillColor: color,
+              fillOpacity: opacityStep * i,
+              weight: 0,
+            }}
+          />
+        )),
+      )}
     </LayerGroup>
   );
 };
