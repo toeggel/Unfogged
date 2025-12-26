@@ -14,17 +14,22 @@ export const parseGpxToStrollRoute = async (gpxContent: string, routeName = "Imp
   const description = xml.querySelector("trk > desc")?.textContent?.trim() || undefined;
 
   const points: RoutePoint[] = [];
-  let timestamp: Date | undefined;
+  const timestamps: Date[] = [];
   xml.querySelectorAll("trkpt").forEach((pt) => {
     const lat = parseFloat(pt.getAttribute("lat") || "");
     const lng = parseFloat(pt.getAttribute("lon") || "");
     const time = pt.querySelector("time")?.textContent;
-    timestamp = time ? new Date(time) : (timestamp ?? undefined);
+    if (time) {
+      timestamps.push(new Date(time));
+    }
     points.push({
       lat,
       lng,
     });
   });
+
+  // Explicitly capture the last timestamp
+  const timestamp = timestamps.length > 0 ? timestamps[timestamps.length - 1] : undefined;
 
   const simplified = simplifyRoute(points, 10);
 
