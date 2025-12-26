@@ -46,7 +46,7 @@ export const DateRangeSlider: React.FC<DateRangeSliderProps> = ({ startDate, min
             </svg>
           </button>
           <div
-            className={` flex flex-col items-center w-full overflow-hidden 
+            className={`flex flex-col items-center w-full overflow-hidden 
             ${isOpen ? "max-h-32 opacity-100 translate-y-0" : "max-h-0 opacity-0 -translate-y-2"}`}
           >
             <div className="flex items-center justify-between text-xs text-gray-700 mb-1 w-full">
