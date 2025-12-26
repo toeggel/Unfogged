@@ -14,7 +14,7 @@ import { DateRangeSlider } from "./DateRangeSlider";
 const MAP_CENTER_GUGGACH = latLng(47.401263, 8.533942);
 const FOG_RADIUS_METERS = 40;
 const FOG_LEVELS = 1;
-const MIN_DATE = new Date("2021-1-1");
+const MIN_DATE = new Date("2021-01-01");
 const MAX_DATE = new Date();
 const GPX_FILES = [
   "routes/Workout-2021-08-21-16-51-18.gpx",
