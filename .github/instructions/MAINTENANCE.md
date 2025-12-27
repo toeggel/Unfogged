@@ -5,12 +5,14 @@ Use this checklist when updating AI instructions or implementing features.
 ## When Implementing Features
 
 ### Before Starting
+
 - [ ] Read relevant section in `project.instructions.md`
 - [ ] Check `AI_AGENT_SUPPORT.md` for existing implementation
 - [ ] Review patterns in `coding.instructions.md`
 - [ ] Scan related code files for examples
 
 ### During Implementation
+
 - [ ] Follow TypeScript rules (const, interfaces, explicit types)
 - [ ] Use Tailwind for all styling
 - [ ] Extract logic into custom hooks where appropriate
@@ -18,6 +20,7 @@ Use this checklist when updating AI instructions or implementing features.
 - [ ] Handle errors gracefully
 
 ### After Completion
+
 - [ ] Update `AI_AGENT_SUPPORT.md`:
   - [ ] Move feature from pending to done
   - [ ] Update implementation details
@@ -28,20 +31,23 @@ Use this checklist when updating AI instructions or implementing features.
 ## When Updating Documentation
 
 ### Adding New Feature
-1. [ ] Add to roadmap in `AI_AGENT_SUPPORT.md`
-2. [ ] Update feature list in `project.instructions.md` if needed
-3. [ ] Document any new patterns in `coding.instructions.md`
+
+- [ ] Add to roadmap in `AI_AGENT_SUPPORT.md`
+- [ ] Update feature list in `project.instructions.md` if needed
+- [ ] Document any new patterns in `coding.instructions.md`
 
 ### Changing Architecture
-1. [ ] Update `project.instructions.md` architecture section
-2. [ ] Update folder structure if changed
-3. [ ] Update cross-references in other docs
+
+- [ ] Update `project.instructions.md` architecture section
+- [ ] Update folder structure if changed
+- [ ] Update cross-references in other docs
 
 ### Adding New Guidelines
-1. [ ] Add to `coding.instructions.md` with examples
-2. [ ] Use clear format for clarity
-3. [ ] Include code examples
-4. [ ] Link from `copilot-instructions.md` if critical
+
+- [ ] Add to `coding.instructions.md` with examples
+- [ ] Use clear format for clarity
+- [ ] Include code examples
+- [ ] Link from `copilot-instructions.md` if critical
 
 ## Monthly Review
 
@@ -54,6 +60,7 @@ Use this checklist when updating AI instructions or implementing features.
 ## Documentation Quality Standards
 
 ### All Documents Should:
+
 - [ ] Use clear, concise language
 - [ ] Include visual hierarchy (headers, lists)
 - [ ] Provide concrete examples
@@ -61,12 +68,14 @@ Use this checklist when updating AI instructions or implementing features.
 - [ ] Be scannable (not walls of text)
 
 ### Code Examples Should:
+
 - [ ] Follow current coding guidelines
 - [ ] Show both good and bad examples
 - [ ] Be realistic (from actual code)
 - [ ] Include types and imports if relevant
 
 ### Status Updates Should:
+
 - [ ] Use clear markers for completed
 - [ ] Use clear markers for planned
 - [ ] Include dates for major milestones
@@ -98,4 +107,3 @@ Last comprehensive review: December 27, 2025
 Document structure established by: AI Optimization Session
 
 Maintained by: Project team
-
