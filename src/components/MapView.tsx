@@ -35,6 +35,10 @@ const GPX_FILES = [
   "routes/Workout-2025-11-22-11-53-06.gpx",
   "routes/Workout-2025-12-23-14-18-55.gpx",
   "routes/Workout-2025-12-26-14-36-11.gpx",
+  "routes/Workout-2025-12-31-14-11-35.gpx",
+
+  // further away
+  "routes/Workout-2026-01-01-11-45-21.gpx",
 ];
 
 export const MapView: React.FC = () => {
@@ -42,7 +46,11 @@ export const MapView: React.FC = () => {
   // const { userLocation, error } = useGeolocation();
   const { liveRoute, location: userLocation, sessionKey } = useLiveStrollRoute();
 
-  const [startDate, setStartDate] = useState<Date>(MIN_DATE);
+  const [startDate, setStartDate] = useState<Date>(() => {
+    const initDate = new Date();
+    initDate.setFullYear(initDate.getFullYear() - 3);
+    return initDate;
+  });
   const [minDate, setMinDate] = useState<Date>(MIN_DATE);
 
   useEffect(() => {
@@ -75,7 +83,6 @@ export const MapView: React.FC = () => {
 
     if (dateOfFirstRoute) {
       const beginningOfYear = new Date(dateOfFirstRoute.getFullYear(), 0, 1);
-      setStartDate(beginningOfYear);
       setMinDate(beginningOfYear);
     }
   }, [allRoutes]);
