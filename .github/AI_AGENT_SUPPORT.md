@@ -1,122 +1,210 @@
-# Unfog Map – AI Agent Support Guide
+# Unfogged – AI Agent Support Guide
 
-## 🧭 Project Vision
+> **Complete implementation status and technical roadmap**
 
-The app encourages urban or natural exploration by tracking user movement and gradually revealing a "fog of war"-style map:
+## Overview
 
-- Areas the user visits are "unfogged" and become visible.
-- Areas not visited for a long time become fogged again.
-- Frequently visited places stay bright and visible.
-- The map gives users an intuitive sense of where they’ve been — and importantly — where they _haven’t_.
+This document tracks what's been implemented, what's missing, and the detailed plan to reach the project vision.
 
-The user wants this as a personal tool to discover new places in their local environment. It should work offline and ideally encourage mindful exploration by highlighting “unfamiliar” or less-visited areas when planning a walk or stroll.
+For project vision and architecture, see **[project.instructions.md](./instructions/project.instructions.md)**.  
+For coding standards, see **[coding.instructions.md](./instructions/coding.instructions.md)**.
 
-## 🧰 Technical Stack
+## Implemented Features
 
-- **Frontend:** React + Vite + TypeScript
-- **Styling:** Tailwind CSS
-- **Map rendering:** Leaflet.js with React-Leaflet
-- **Storage:** IndexedDB via `localForage` (offline-first)
-- **Deployment:**
-  - If static-only: GitHub Pages
-  - If backend needed later: Azure Static Web Apps + Azure Functions
-- **Form factor:** Progressive Web App (PWA), installable, mobile-first UX
-- **Offline Mode:** Full offline usability required. Must cache map tiles and location data.
+### Core Infrastructure
+- React + Vite + TypeScript: Modern, fast, type-safe setup
+- Tailwind CSS: Utility-first styling configured
+- Leaflet + React-Leaflet: Map rendering operational
+- IndexedDB (localForage): Offline storage configured
 
-## 🔧 Key Features
+### Location & Tracking
+- Geolocation hook (`useGeolocation`): Tracks user position
+- Live route tracking (`useLiveStrollRoute`): Records active routes
+- Route persistence: Saves routes to IndexedDB
+- Route storage (`routeStore`): CRUD operations for routes
 
-- Track user location periodically (when granted and active)
-- Render fog/unfog states on a map
-- Store visit history and timestamps locally
-- Auto-refog areas based on elapsed time
-- Prioritize exploration of unknown/forgotten areas
-- Respect battery and privacy (GPS should not be always-on; batching allowed)
-- Optional background sync or cloud backup in future versions
+### Map Features
+- Map centering: Centers on user location
+- GPX import (`gpxImport`): Loads historical routes
+- Route visualization: Displays tracks on map
+- Route masking (`buildRouteMask`): Creates fog/unfog polygons
+- Fog overlay rendering: Shows visited areas as clear zones
+- Graduated fog rings: Multiple fog levels around routes
+- Custom map markers: SVG-based position indicator
 
-## 👤 AI Agent Role
+### Architecture
+- Component structure: Modular, well-separated components
+- Custom hooks: Reusable logic encapsulation
+- Type safety: Strong TypeScript interfaces throughout
+- Array utilities: Helper functions for chunking/processing
 
-- Help design a modular, clean architecture
-- Suggest React component structures and Tailwind design choices
-- Guide efficient offline data handling (e.g., IndexedDB, caching)
-- Propose smart algorithms for fog logic (e.g., decay rates, visit heatmaps)
-- Optimize for performance on low-end mobile devices
-- Provide ideas for future features (gamification, social, analysis)
-- Always balance developer efficiency with user experience
+## Missing Features
 
-## ✅ What Is Already Implemented
+### Visual Enhancements
+- Heatmap visualization: No visit frequency/brightness indication
+- Time-based fog decay: No automatic re-fogging over time
+- Viewport optimization: Renders all routes, not just visible ones
 
-- React + Vite + TypeScript: Modern, fast, and type-safe setup.
-- Tailwind CSS: Installed and configured for utility-first styling.
-- Leaflet + React-Leaflet: Map rendering is working.
-- Location Tracking: Custom hook (`useLocationTracker`) tracks user’s geolocation and persists the last position in IndexedDB (via localForage).
-- Map Centering: The map centers on the user’s current position.
-- Component Structure: Modular, with clear separation (App, MapView, hooks).
-- Offline Storage: localForage is set up for storing location data.
-- **Grid-based fog logic:** The map is divided into a configurable grid (default 10x10 meters). Each location update logs a visit to the corresponding cell in IndexedDB.
-- **Fog overlays:** The map displays fog/unfog overlays for each cell, with color/opacity based on fog state (unfogged, partial, fogged). Fog state is determined by last visit time.
-- **Viewport-based rendering:** Only cells in the current map viewport are loaded and rendered for performance.
+### Storage & Performance
+- Grid-based tracking: Routes only, no cell-based visit system yet
+- Spatial indexing: No geohash or R-tree for fast lookups
+- Batch updates: No batching of IndexedDB writes
+- Lazy loading: All components load eagerly
 
-## ❌ What’s Missing (Compared to Vision)
+### PWA Features
+- Service worker: No offline tile caching
+- Manifest optimization: Basic manifest exists but not tuned
+- Install prompts: No PWA install guidance
+- Background sync: No sync when online after offline use
 
-- **Heatmap/Brightness:** No visual indication of frequently visited areas (visit count not yet visualized).
-- **Efficient Storage:** No batching or grid-based storage optimizations for large areas.
-- **Map Tile Caching:** No offline map tile caching yet.
-- **Battery/Privacy Optimization:** No batching or throttling of GPS polling.
-- **PWA Features:** No manifest, service worker, or installability.
-- **UI/UX:** No onboarding, settings, or exploration suggestions.
-- **Settings:** No UI to configure grid size, fog decay, or other parameters.
+### UX & Settings
+- Settings UI: No configuration interface
+- Onboarding: No first-time user guidance
+- Exploration suggestions: No "where to explore next" feature
+- Statistics: No visit counts, distance traveled, etc.
 
-## 🗺️ Detailed Plan to Reach the Vision
+### Battery & Privacy
+- Location throttling: No configurable update intervals
+- Tracking pause/resume: Can't manually pause tracking
+- Battery optimization: No adaptive tracking based on battery
 
-1. **Grid System for Fog Tracking**
-   - Divide the map into a grid (e.g., 10x10m cells, configurable).
-   - Each cell will have a unique ID and store visit data.
+## Detailed Roadmap
 
-2. **Visit Logging**
-   - On each location update, determine the current cell.
-   - Store/update the last visit timestamp and visit count for that cell in IndexedDB.
+### Phase 1: Core Fog System (Grid-Based)
 
-3. **Fog State Calculation**
-   - For each cell, calculate its fog state:
-     - Unfogged: recently visited.
-     - Partially fogged: visited, but not recently.
-     - Fully fogged: never or long ago visited.
-   - Optionally, use visit count for brightness/heatmap.
+#### 1.1 Grid Infrastructure
+```typescript
+interface FogCell {
+  id: string;        // Geohash or "lat_lng"
+  lat: number;
+  lng: number;
+  lastVisit: Date;
+  visitCount: number;
+  fogState: FogState;
+}
 
-4. **Fog Overlay Rendering**
-   - Render a semi-transparent overlay for each cell based on its fog state.
-   - Use React-Leaflet’s Rectangle or a custom canvas layer for performance.
-   - Only render cells in the current viewport.
+type FogState = 'clear' | 'light' | 'medium' | 'full';
+```
 
-5. **Fog Decay Logic**
-   - On app load or periodically, update fog states based on elapsed time since last visit.
+**Tasks:**
+- [ ] Create `fogStore.ts` for cell CRUD operations
+- [ ] Implement geohash-based cell ID generation
+- [ ] Build cell visit logging on location updates
+- [ ] Create fog state calculation logic (time decay)
 
-6. **Efficient Storage & Performance**
-   - Batch updates to IndexedDB.
-   - Only load/store cells in/near the current viewport.
-   - Consider using a spatial index or geohash for fast lookups.
+#### 1.2 Fog Rendering
+**Tasks:**
+- [ ] Build viewport-based cell query
+- [ ] Create canvas-based fog overlay renderer
+- [ ] Implement fog opacity based on time since visit
+- [ ] Add brightness/heatmap based on visit frequency
 
-7. **Map Tile Caching (Offline)**
-   - Integrate a service worker to cache map tiles for offline use.
-   - Optionally, prefetch tiles for frequently visited areas.
+#### 1.3 Performance Optimization
+**Tasks:**
+- [ ] Batch IndexedDB writes (queue + flush)
+- [ ] Spatial index for viewport queries
+- [ ] Memoize expensive fog calculations
+- [ ] Lazy load fog layers outside viewport
 
-8. **PWA Features**
-   - Add a manifest and service worker for installability and offline support.
+### Phase 2: PWA & Offline
 
-9. **UI/UX Enhancements**
-   - Add onboarding to explain the fog concept.
-   - Add settings for fog decay rate, cell size, etc.
-   - Suggest unexplored/forgotten areas to the user.
+#### 2.1 Service Worker
+**Tasks:**
+- [ ] Set up Workbox for tile caching
+- [ ] Cache static assets (JS, CSS, images)
+- [ ] Implement tile cache strategy (cache-first)
+- [ ] Add cache size limits and expiration
 
-10. **Battery & Privacy**
+#### 2.2 Manifest & Installability
+**Tasks:**
+- [ ] Optimize `manifest.webmanifest` (icons, theme)
+- [ ] Add install prompt UI
+- [ ] Handle iOS add-to-homescreen
 
-- Throttle/batch location updates.
-- Allow users to pause tracking.
+#### 2.3 Background Sync
+**Tasks:**
+- [ ] Queue route uploads when offline
+- [ ] Sync when connection restored
+- [ ] Handle sync conflicts
 
-## 📝 Next Steps (Suggested Order)
+### Phase 3: UX & Settings
 
-1. Visualize visit frequency (heatmap/brightness) for each cell.
-2. Optimize storage and rendering for performance at scale.
-3. Add PWA and offline map tile caching.
-4. Add UI for settings (grid size, fog decay, etc).
-5. Enhance onboarding and exploration suggestions.
+#### 3.1 Settings UI
+```typescript
+interface AppSettings {
+  fogDecayDays: number;      // Days until full re-fog
+  cellSizeMeters: number;     // Grid cell size
+  locationUpdateInterval: number; // ms between updates
+  trackingEnabled: boolean;
+}
+```
+
+**Tasks:**
+- [ ] Create settings component
+- [ ] Persist settings to IndexedDB
+- [ ] Apply settings to fog logic
+- [ ] Add preset options (battery saver, max detail, etc.)
+
+#### 3.2 Onboarding & Help
+**Tasks:**
+- [ ] First-time user tutorial
+- [ ] Explain fog concept
+- [ ] Location permission education
+- [ ] Interactive demo
+
+#### 3.3 Statistics & Insights
+**Tasks:**
+- [ ] Total distance traveled
+- [ ] Unique cells visited
+- [ ] Exploration percentage (of region)
+- [ ] Time since last visit per area
+
+### Phase 4: Advanced Features
+
+#### 4.1 Exploration Suggestions
+**Tasks:**
+- [ ] Identify nearby unvisited areas
+- [ ] Suggest routes to explore
+- [ ] Highlight "forgotten" areas (visited long ago)
+- [ ] Generate optimal exploration paths
+
+#### 4.2 Gamification
+**Tasks:**
+- [ ] Achievements (100 cells, 1000km, etc.)
+- [ ] Streaks (consecutive days exploring)
+- [ ] Challenges (visit 10 new areas this week)
+
+#### 4.3 Social Features (Optional)
+**Tasks:**
+- [ ] Export fog map as image
+- [ ] Share exploration stats
+- [ ] Compare fog maps with friends (privacy-preserving)
+
+## Next Steps (Priority Order)
+
+1. **Implement grid-based fog system** (Phase 1.1)
+   - Most impactful for core vision
+   - Enables all future fog features
+
+2. **Add fog decay logic** (Phase 1.1)
+   - Makes exploration continuous
+   - Encourages revisiting
+
+3. **Optimize rendering performance** (Phase 1.3)
+   - Essential for mobile experience
+   - Enables scaling to large areas
+
+4. **Build settings UI** (Phase 3.1)
+   - User control over experience
+   - Enables battery/privacy options
+
+5. **Add PWA caching** (Phase 2.1)
+   - True offline experience
+   - Critical for outdoor use
+
+## Related Documentation
+
+- [Project Vision & Architecture](./instructions/project.instructions.md)
+- [Coding Guidelines](./instructions/coding.instructions.md)
+- [Main Copilot Instructions](./copilot-instructions.md)
+
