@@ -106,7 +106,7 @@ export const MapView: React.FC = () => {
 
 ### Hooks
 ```typescript
-// Custom hooks follow use* naming
+// Custom hooks follow `use*` naming
 export const useGeolocation = (): GeolocationResult => {
   const [location, setLocation] = useState<Location | null>(null);
   // ...
