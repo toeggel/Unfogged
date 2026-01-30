@@ -40,6 +40,28 @@ coverage/
 # Tailwind JIT cache
 .tailwindcss/
 
+# Capacitor/Android/iOS build artifacts
+android/.gradle/
+android/.idea/
+android/local.properties
+android/.cxx/
+android/.DS_Store
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/capacitor-cordova-android-plugins/.cxx/
+android/capacitor-cordova-android-plugins/.externalNativeBuild/
+android/capacitor-cordova-android-plugins/.gradle/
+android/capacitor-cordova-android-plugins/.idea/
+android/capacitor-cordova-android-plugins/local.properties
+android/capacitor-cordova-android-plugins/.DS_Store
+ios/App/App.xcworkspace/
+ios/App/Pods/
+ios/App/Podfile.lock
+ios/App/build/
+ios/App/DerivedData/
+ios/App/.DS_Store
+
 # Optional: lock files (if you want to ignore them)
 # package-lock.json
 # yarn.lock
