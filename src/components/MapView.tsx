@@ -9,8 +9,8 @@ import { FlyToLocation } from "./FlyToLocation";
 import { saveRoute } from "../storage/routeStore";
 import { useLiveStrollRoute } from "../hooks/useLiveRoute";
 import { customSvgIcon } from "../map/map-position";
-import { DateRangeSlider } from "./DateRangeSlider";
 import { parseGpxToStrollRoute } from "../routes/gpxImport";
+import { BottomSheet } from "./BottomSheet";
 
 const MAP_CENTER_GUGGACH = latLng(47.401263, 8.533942);
 const FOG_RADIUS_METERS = 40;
@@ -18,33 +18,33 @@ const FOG_LEVELS = 1;
 const MIN_DATE = new Date("2021-01-01");
 const MAX_DATE = new Date();
 const GPX_FILES: string[] = [
-  // "routes/Workout-2021-08-21-16-51-18.gpx",
-  // "routes/Workout-2023-07-27-15-57-27.gpx",
-  // "routes/Workout-2023-08-03-17-11-26.gpx",
-  // "routes/Workout-2023-08-10-15-36-57.gpx",
-  // "routes/Workout-2023-12-19-10-55-33.gpx",
-  // "routes/Workout-2024-07-16-16-07-28.gpx",
-  // "routes/Workout-2025-07-17-16-12-28.gpx",
-  // "routes/Workout-2025-08-16-10-28-36.gpx",
-  // "routes/Workout-2025-09-03-19-54-14.gpx",
-  // "routes/Workout-2025-09-07-11-40-11.gpx",
-  // "routes/Workout-2025-09-12-16-01-00.gpx",
-  // "routes/Workout-2025-10-29-13-15-01.gpx",
-  // "routes/Workout-2025-11-01-11-56-41.gpx",
-  // "routes/Workout-2025-11-14-13-31-50.gpx",
-  // "routes/Workout-2025-11-20-20-27-41.gpx",
-  // "routes/Workout-2025-11-22-11-53-06.gpx",
-  // "routes/Workout-2025-12-23-14-18-55.gpx",
-  // "routes/Workout-2025-12-26-14-36-11.gpx",
-  // "routes/Workout-2025-12-31-14-11-35.gpx",
-  // "routes/Workout-2026-01-02-12-41-20.gpx",
-  // "routes/Workout-2026-01-03-11-07-16.gpx",
-  // "routes/Workout-2026-01-10-11-43-44.gpx",
-  // "routes/Workout-2026-01-11-11-21-57.gpx",
-  // "routes/Workout-2026-01-17-13-19-42.gpx",
-  //
-  // // further away
-  // "routes/Workout-2026-01-01-11-45-21.gpx",
+  "routes/Workout-2021-08-21-16-51-18.gpx",
+  "routes/Workout-2023-07-27-15-57-27.gpx",
+  "routes/Workout-2023-08-03-17-11-26.gpx",
+  "routes/Workout-2023-08-10-15-36-57.gpx",
+  "routes/Workout-2023-12-19-10-55-33.gpx",
+  "routes/Workout-2024-07-16-16-07-28.gpx",
+  "routes/Workout-2025-07-17-16-12-28.gpx",
+  "routes/Workout-2025-08-16-10-28-36.gpx",
+  "routes/Workout-2025-09-03-19-54-14.gpx",
+  "routes/Workout-2025-09-07-11-40-11.gpx",
+  "routes/Workout-2025-09-12-16-01-00.gpx",
+  "routes/Workout-2025-10-29-13-15-01.gpx",
+  "routes/Workout-2025-11-01-11-56-41.gpx",
+  "routes/Workout-2025-11-14-13-31-50.gpx",
+  "routes/Workout-2025-11-20-20-27-41.gpx",
+  "routes/Workout-2025-11-22-11-53-06.gpx",
+  "routes/Workout-2025-12-23-14-18-55.gpx",
+  "routes/Workout-2025-12-26-14-36-11.gpx",
+  "routes/Workout-2025-12-31-14-11-35.gpx",
+  "routes/Workout-2026-01-02-12-41-20.gpx",
+  "routes/Workout-2026-01-03-11-07-16.gpx",
+  "routes/Workout-2026-01-10-11-43-44.gpx",
+  "routes/Workout-2026-01-11-11-21-57.gpx",
+  "routes/Workout-2026-01-17-13-19-42.gpx",
+
+  // further away
+  "routes/Workout-2026-01-01-11-45-21.gpx",
 ];
 
 export const MapView: React.FC = () => {
@@ -123,16 +123,6 @@ export const MapView: React.FC = () => {
 
   return (
     <>
-      <div className="flex flex-col items-center p-2">
-        <label className="block mb-2 text-sm font-medium text-gray-700">Import GPX files</label>
-        <input
-          type="file"
-          accept=".gpx"
-          multiple
-          onChange={handleGpxFiles}
-          className="file-input file-input-bordered w-full max-w-xs"
-        />
-      </div>
       <MapContainer center={userLocation || MAP_CENTER_GUGGACH} zoom={15} style={{ height: "100vh" }}>
         <LayersControl position="topright">
           <LayersControl.BaseLayer checked name="OpenStreetMap">
@@ -153,7 +143,13 @@ export const MapView: React.FC = () => {
         <FlyToLocation position={userLocation || MAP_CENTER_GUGGACH} />
         <Marker position={userLocation || MAP_CENTER_GUGGACH} icon={customSvgIcon}></Marker>
       </MapContainer>
-      <DateRangeSlider startDate={startDate} minDate={minDate} maxDate={MAX_DATE} onDateChange={setStartDate} />
+      <BottomSheet
+        startDate={startDate}
+        minDate={minDate}
+        maxDate={MAX_DATE}
+        onDateChange={setStartDate}
+        onFilesSelected={handleGpxFiles}
+      />
     </>
   );
 };
