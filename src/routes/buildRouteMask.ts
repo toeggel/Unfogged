@@ -54,7 +54,7 @@ export const buildRouteMask = (
   fogRings: FogRing[];
 } => {
   if (routes.length === 0) {
-    return { mask: null, fogRings: [] };
+    return { mask: world, fogRings: [] };
   }
 
   const routesOrderedByTime = [...routes].sort((a, b) => (b.timestamp?.getTime() ?? 0) - (a.timestamp?.getTime() ?? 0));

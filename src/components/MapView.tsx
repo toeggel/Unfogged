@@ -9,14 +9,15 @@ import { FlyToLocation } from "./FlyToLocation";
 import { saveRoute } from "../storage/routeStore";
 import { useLiveStrollRoute } from "../hooks/useLiveRoute";
 import { customSvgIcon } from "../map/map-position";
-import { DateRangeSlider } from "./DateRangeSlider";
+import { parseGpxToStrollRoute } from "../routes/gpxImport";
+import { BottomSheet } from "./BottomSheet";
 
 const MAP_CENTER_GUGGACH = latLng(47.401263, 8.533942);
 const FOG_RADIUS_METERS = 40;
 const FOG_LEVELS = 1;
 const MIN_DATE = new Date("2021-01-01");
 const MAX_DATE = new Date();
-const GPX_FILES = [
+const GPX_FILES: string[] = [
   "routes/Workout-2021-08-21-16-51-18.gpx",
   "routes/Workout-2023-07-27-15-57-27.gpx",
   "routes/Workout-2023-08-03-17-11-26.gpx",
@@ -57,6 +58,26 @@ export const MapView: React.FC = () => {
     return initDate;
   });
   const [minDate, setMinDate] = useState<Date>(MIN_DATE);
+  const [uploadedRoutes, setUploadedRoutes] = useState<StrollRoute[]>([]);
+
+  // File input handler for GPX files
+  const handleGpxFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) {
+      return;
+    }
+
+    const routes: StrollRoute[] = [];
+    for (const file of files) {
+      const text = await file.text();
+      const route = await parseGpxToStrollRoute(text, file.name);
+      if (route) {
+        routes.push(route);
+      }
+    }
+
+    setUploadedRoutes(routes);
+  };
 
   useEffect(() => {
     if (!liveRoute) {
@@ -68,12 +89,12 @@ export const MapView: React.FC = () => {
   }, [liveRoute]);
 
   const allRoutes = useMemo(() => {
-    const combined: StrollRoute[] = [...importedRoutes];
+    const combined: StrollRoute[] = [...importedRoutes, ...uploadedRoutes];
     if (liveRoute) {
       combined.push(liveRoute);
     }
     return combined;
-  }, [importedRoutes, liveRoute]);
+  }, [importedRoutes, uploadedRoutes, liveRoute]);
 
   const mask = useMemo(() => {
     const { mask, fogRings } = buildRouteMask(allRoutes, FOG_RADIUS_METERS, FOG_LEVELS);
@@ -122,7 +143,13 @@ export const MapView: React.FC = () => {
         <FlyToLocation position={userLocation || MAP_CENTER_GUGGACH} />
         <Marker position={userLocation || MAP_CENTER_GUGGACH} icon={customSvgIcon}></Marker>
       </MapContainer>
-      <DateRangeSlider startDate={startDate} minDate={minDate} maxDate={MAX_DATE} onDateChange={setStartDate} />
+      <BottomSheet
+        startDate={startDate}
+        minDate={minDate}
+        maxDate={MAX_DATE}
+        onDateChange={setStartDate}
+        onFilesSelected={handleGpxFiles}
+      />
     </>
   );
 };
