@@ -1,14 +1,14 @@
 ﻿import React from "react";
 import { ArrowUpOnSquareIcon } from "@heroicons/react/24/outline";
 
-interface GpxImportFabProps {
+interface GpxImportButtonProps {
   onFilesSelected: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export const GpxImportButton: React.FC<GpxImportFabProps> = ({ onFilesSelected }) => {
+export const GpxImportButton: React.FC<GpxImportButtonProps> = ({ onFilesSelected }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleFabClick = () => {
+  const handleButtonClick = () => {
     fileInputRef.current?.click();
   };
 
@@ -18,7 +18,7 @@ export const GpxImportButton: React.FC<GpxImportFabProps> = ({ onFilesSelected }
         type="button"
         aria-label="Import GPX files"
         className="bg-blue-600 hover:bg-blue-700 text-white p-2 flex items-center justify-center focus:outline-none"
-        onClick={handleFabClick}
+        onClick={handleButtonClick}
         title="Import GPX files"
       >
         <div className="h-6 w-6">
