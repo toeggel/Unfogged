@@ -42,6 +42,8 @@ const GPX_FILES: string[] = [
   "routes/Workout-2026-01-10-11-43-44.gpx",
   "routes/Workout-2026-01-11-11-21-57.gpx",
   "routes/Workout-2026-01-17-13-19-42.gpx",
+  "routes/Workout-2026-02-01-12-02-43.gpx",
+  "routes/Workout-2026-02-24-17-18-05.gpx",
 
   // further away
   "routes/Workout-2026-01-01-11-45-21.gpx",
